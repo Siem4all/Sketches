@@ -36,15 +36,15 @@ class SketchStatistics:
     def incFlow(self, flow):
         # Increment the counters for the given flow by hashing and updating the appropriate counter values
         for seed in range(self.depth):
-            index_in_1D_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
-            self.counters.incCntr(cntrIdx=index_in_1D_array, factor=1, verbose=[], mult=False)
+            index_in_ID_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            self.counters.incCntr(cntrIdx=index_in_ID_array, factor=1, verbose=[], mult=False)
 
     def queryFlow(self, flow):
         # Query the minimum counter value for the given flow by hashing and finding the minimum value among the appropriate counters
         min_num = math.inf
         for seed in range(self.depth):
-            index_in_1D_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
-            estimate = self.counters.queryCntr(index_in_1D_array)
+            index_in_ID_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            estimate = self.counters.queryCntr(index_in_ID_array)
             min_num = min(estimate['val'], min_num)
         return min_num
 
