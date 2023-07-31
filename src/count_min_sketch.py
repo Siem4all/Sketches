@@ -90,8 +90,9 @@ class SketchStatistics:
         # It provides a way to evaluate the accuracy of the Count-Min Sketch and compare different increments.
         # The Normalized RMSE is a useful metric for measuring the accuracy of the Count-Min Sketch in estimating the frequencies.
 
-def main(num_flows=500):
+def main():
     remove_existing_files()
+    num_flows=500  # default value
     width = 5  # default value
     depth = 2   # default value
     maxIncrement=10000
