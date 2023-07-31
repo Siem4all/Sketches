@@ -50,7 +50,7 @@ class SketchStatistics:
 
     def runSimulationAndCalculateNormalizedRMSE(self):
         """"
-        This simulation calculates the Root Mean Square Error (RMSE) and Normalized RMSE for differenr increments.
+        This simulation calculates the Root Mean Square Error (RMSE) and Normalized RMSE for different number of increments.
         i have updates the counter self.numOfIncrements times by generating random flow from 0 to self.num_flows.
         It stores the real value at the index of the flow and it queries the estimated value of the flow from the array counter after
         incrementing it using the methodology of count min sketch.
