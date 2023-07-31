@@ -24,26 +24,26 @@ class SketchStatistics:
         - cntrMaxVal (int): the maximum counter value.
        Attributes:
         - counters: a CntrMaster object that holds the counter values for the sketch.
-        - pair: a tuple of row and column indices used to compute the corresponding counter index.
+        - row_column_pair: a tuple of row and column indices used to compute the corresponding counter index.
        Notes:
-        - The pair attribute is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
+        - The row_column_pair attribute is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
         self.width, self.depth, self.num_flows, self.numOfIncrements = width, depth, num_flows, numOfIncrements  # depth is equals to number of hash functions
         self.counters = CntrMaster(cntrSize=4, numCntrs=depth * width, a=10, cntrMaxVal=1000, verbose=[])
-        self.pair = [f"{i},{j}" for i in range(depth) for j in range(width)]
+        self.row_column_pair = [f"{i},{j}" for i in range(depth) for j in range(width)]
 
     def incFlow(self, flow):
         # Increment the counters for the given flow by hashing and updating the appropriate counter values
         for seed in range(self.depth):
-            index_in_1D_array = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            index_in_1D_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             self.counters.incCntr(cntrIdx=index_in_1D_array, factor=1, verbose=[], mult=False)
 
     def queryFlow(self, flow):
         # Query the minimum counter value for the given flow by hashing and finding the minimum value among the appropriate counters
         min_num = math.inf
         for seed in range(self.depth):
-            index_in_1D_array = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            index_in_1D_array = self.row_column_pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             estimate = self.counters.queryCntr(index_in_1D_array)
             min_num = min(estimate['val'], min_num)
         return min_num
