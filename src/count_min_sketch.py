@@ -94,8 +94,8 @@ def main(num_flows=500):
     remove_existing_files()
     width = 5  # default value
     depth = 2   # default value
-    numOfIncrements=10000
-    for num in range(100, numOfIncrements, 500):
+    maxIncrement=10000
+    for num in range(100, maxIncrement, 500):
         cmc = SketchStatistics(width=width, depth=depth, num_flows=num_flows, numOfIncrements=num)
         cmc.runSimulationAndCalculateNormalizedRMSE()
     plot_counters()
