@@ -78,7 +78,7 @@ class CountMinSketch:
         """
         numOfIncrements = 1000
         realValCntr = np.zeros(self.num_flows)
-        error_value = []
+        error_value = np.zeros(numOfIncrements)
         # Increment the counters randomly and update the real values
         for i in range(numOfIncrements):
             # Choose a random flow to increment
@@ -88,7 +88,7 @@ class CountMinSketch:
             # Update the corresponding real value counter
             realValCntr[flow] += 1
             # Compute the error between the estimated and real frequencies for the flow and append it to the error_value list
-            error_value.append(abs(realValCntr[flow] - self.queryFlow(flow)) / realValCntr[flow])
+            error_value[i]= abs(realValCntr[flow] - self.queryFlow(flow)) / realValCntr[flow]
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the error_value list
         RMSE = math.sqrt(sum(error ** 2 for error in error_value) / numOfIncrements)
         Normalized_RMSE = RMSE / numOfIncrements
