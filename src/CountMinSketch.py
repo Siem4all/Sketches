@@ -17,10 +17,8 @@ def remove_existing_files():
     if os.path.exists('../res/pcl_files/CEDAR_increments.pcl'):
         os.remove('../res/pcl_files/CEDAR_increments.pcl')
 
-    if os.path.exists('../res/Normalized_Morris_error.res'):
-        os.remove('../res/Normalized_Morris_error.res')
-    if os.path.exists('../res/Normalized_CEDAR_error.res'):
-        os.remove('../res/Normalized_CEDAR_error.res')
+    if os.path.exists('../res/pcl_files/realCounter_increments.pcl'):
+        os.remove('../res/pcl_files/realCounter_increments.pcl')
 
 
 class CountMinSketch:
@@ -41,10 +39,13 @@ class CountMinSketch:
          """
         self.mode=mode
         self.width, self.depth, self.num_flows = width, depth, num_flows  # depth is equals to number of hash functions
+        self.numCntrs=self.width*self.depth
         if self.mode=='Morris':  
-            self.estimate_counter = MorrisCounter(cntrSize=4, numCntrs=depth * width, a=10, cntrMaxVal=1000, verbose=[]) # Initialize the Morris counter
+            self.estimate_counter = MorrisCounter(cntrSize=8, numCntrs=self.numCntrs, a=10, cntrMaxVal=1000, verbose=[]) # Initialize the Morris counter
+        elif self.mode=='realCounter':
+             self.realCounter=[0]*self.numCntrs
         else:
-            self.flow_counter = CEDARCounter(cntrSize=4, numCntrs=depth * width, cntrMaxVal=1000)  # Initialize the CEDAR counter
+            self.flow_counter = CEDARCounter(cntrSize=8, numCntrs=self.numCntrs, cntrMaxVal=1000)  # Initialize the CEDAR counter
         self.pair = [f"{i},{j}" for i in range(depth) for j in range(width)]
 
     def incFlow(self, flow):
@@ -54,7 +55,9 @@ class CountMinSketch:
         for seed in range(self.depth):
             counterIndex = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             if self.mode=='Morris':
-                self.estimate_counter.incCntr(cntrIdx=counterIndex, factor=1, verbose=[], mult=False)  
+                self.estimate_counter.incCntr(cntrIdx=counterIndex, factor=1, verbose=[], mult=False)
+            elif self.mode=='realCounter':
+                self.realCounter[counterIndex]+=1
             else:
                 self.flow_counter.cntrIncrement(flowIdx=counterIndex, factor=1)  
 
@@ -66,6 +69,9 @@ class CountMinSketch:
             if self.mode=='Morris':
                 estimate = self.estimate_counter.queryCntr(counterIndex)
                 minNum = min(estimate['val'], minNum)
+            elif self.mode=='realCounter':
+                estimate = self.realCounter[counterIndex]
+                minNum = min(estimate, minNum)
             else:
                 estimate = self.flow_counter.queryCntr(counterIndex)
                 minNum = min(estimate, minNum)
@@ -96,11 +102,6 @@ class CountMinSketch:
         Normalized_RMSE = RMSE / numOfIncrements
         if self.mode=='Morris':
             # Write the results to a file and return them as a dictionary
-            resFile = open(f'../res/Normalized_Morris_error.res', 'a+')
-            printf(resFile, '\nnumOfIncrements={},  numCntrs={}, RMSE={}, Normalized_RMSE={}\n'.format(numOfIncrements,
-                                                                                                       self.width * self.depth,
-                                                                                                       RMSE,
-                                                                                                       Normalized_RMSE))
             simulation_results = {
                 'width': self.width,
                 'Normalized_RMSE': Normalized_RMSE,
@@ -108,13 +109,15 @@ class CountMinSketch:
             # Append the simulation results to the appropriate file
             with open(f'../res/pcl_files/Morris_increments.pcl', 'ab') as f:
                 pickle.dump(simulation_results, f)
+        elif self.mode=='realCounter':
+            simulation_results = {
+                'width': self.width,
+                'Normalized_RMSE': Normalized_RMSE,
+            }
+            # Append the simulation results to the appropriate file
+            with open(f'../res/pcl_files/realCounter_increments.pcl', 'ab') as f:
+                pickle.dump(simulation_results, f)
         else:
-            # Write the results to a file and return them as a dictionary
-            resFile = open(f'../res/Normalized_CEDAR_error.res', 'a+')
-            printf(resFile, '\nnumOfIncrements={},  numCntrs={}, RMSE={}, Normalized_RMSE={}\n'.format(numOfIncrements,
-                                                                                                       self.width * self.depth,
-                                                                                                       RMSE,
-                                                                                                       Normalized_RMSE))
             simulation_results = {
                 'width': self.width,
                 'Normalized_RMSE': Normalized_RMSE,
@@ -123,7 +126,7 @@ class CountMinSketch:
             with open(f'../res/pcl_files/CEDAR_increments.pcl', 'ab') as f:
                 pickle.dump(simulation_results, f)
 
-def main(num_flows=100):
+def main(num_flows=20):
     """
     This starts by removing the old files if they exists using remove_existing_files method. It iterate the first for loop
     based on the list of counter types and tranfer the counter type as a mode to the CountMinSketch class to use either the Morris
@@ -131,9 +134,9 @@ def main(num_flows=100):
     """                                                                                                          
     remove_existing_files()
     depth = 2  # default value
-    counter_types = ['Morris', 'CEDAR']
+    counter_types = ['Morris', 'CEDAR', 'realCounter']
     for counter_type in counter_types:
-        for width in range(2, num_flows//2, 3):
+        for width in range(2, num_flows//2):
             cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_type)
             cmc.runSimulationAndCalculateNormalizedRMSE()
     plot_counters()

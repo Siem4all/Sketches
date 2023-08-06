@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 def plot_counters():
     """
     Load the dictionaries from the pcl files and plot the Normalized_Morris_RMSE in Y-axis and the counter Width in X-axis f
-    or both the counter types to compare and understand their difference easly. 
+    or both the counter types to compare and understand their difference easily.
     """
     Morris_increments = []
     with open('../res/pcl_files/Morris_increments.pcl', 'rb') as f:
@@ -13,6 +13,14 @@ def plot_counters():
             try:
                 my_dict = pickle.load(f)
                 Morris_increments.append(my_dict)
+            except EOFError:
+                break
+    realCounter_increments = []
+    with open('../res/pcl_files/realCounter_increments.pcl', 'rb') as f:
+        while True:
+            try:
+                my_dict = pickle.load(f)
+                realCounter_increments.append(my_dict)
             except EOFError:
                 break
     CEDAR_increments = []
@@ -25,15 +33,20 @@ def plot_counters():
                 break
 
     # Extract the data from the dictionaries
-    widths_Morris = []
+    Morris_widths = []
     Normalized_Morris_RMSE = []
-    widths_CEDAR = []
+    realCounter_widths= []
+    Normalized_realCounter_RMSE = []
+    CEDAR_widths = []
     Normalized_CEDAR_RMSE = []
     for m in Morris_increments:
-        widths_Morris.append(m['width'])
+        Morris_widths.append(m['width'])
         Normalized_Morris_RMSE.append(m['Normalized_RMSE'])
+    for r in realCounter_increments:
+        realCounter_widths.append(r['width'])
+        Normalized_realCounter_RMSE.append(r['Normalized_RMSE'])
     for c in CEDAR_increments:
-        widths_CEDAR.append(c['width'])
+        CEDAR_widths.append(c['width'])
         Normalized_CEDAR_RMSE.append(c['Normalized_RMSE'])
     if max(Normalized_Morris_RMSE) >= max(Normalized_CEDAR_RMSE):
         maxYValue = max(Normalized_Morris_RMSE) + max(Normalized_Morris_RMSE)/2
@@ -41,34 +54,21 @@ def plot_counters():
         maxYValue = max(Normalized_CEDAR_RMSE) + max(Normalized_CEDAR_RMSE)/2
 
     # Create a figure and axis object
-    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+    fig, axs = plt.subplots()
 
     # Plot the depth vs. avg_error data on the first subplot
-    axs[0].plot(widths_Morris, Normalized_Morris_RMSE, '-o', linewidth=2, markersize=8, color='blue', label='Morris')
-    axs[0].set_xlabel('Width', fontsize=12)
-    axs[0].set_ylabel('Normalized_RMSE ', fontsize=12)
-    axs[0].set_title('width vs. Normalized_RMSE', fontsize=14)
-    axs[0].grid(True)
-    axs[0].set_ylim([0, max(Normalized_Morris_RMSE) + max(Normalized_Morris_RMSE)/2])
-    axs[0].set_xlim([0, max(widths_Morris) + 1])
-
-    # Plot the width vs. avg_error data on the second subplot
-    axs[1].plot(widths_CEDAR, Normalized_CEDAR_RMSE, '-o', linewidth=2, markersize=8, color='green', label='CEDAR')
-    axs[1].set_xlabel('Width', fontsize=12)
-    axs[1].set_ylabel('Normalized_RMSE', fontsize=12)
-    axs[1].set_title('Width vs. Normalized_RMSE', fontsize=14)
-    axs[1].grid(True)
-    axs[1].set_ylim([0, max(Normalized_CEDAR_RMSE) + max(Normalized_CEDAR_RMSE)/2])
-    axs[1].set_xlim([0, max(widths_CEDAR) + 1])
-    axs[1].grid(True)
+    axs.plot(CEDAR_widths, Normalized_CEDAR_RMSE, '-o', linewidth=2, markersize=8, color='green', label='CEDAR')
+    axs.plot(Morris_widths, Normalized_Morris_RMSE, '-o', linewidth=2, markersize=8, color='blue', label='Morris')
+    axs.plot(realCounter_widths, Normalized_realCounter_RMSE, '-o', linewidth=2, markersize=8, color='brown', label='realCounter')
+    axs.set_xlabel('Width', fontsize=12)
+    axs.set_ylabel('Normalized_RMSE ', fontsize=12)
+    axs.set_title('width vs. Normalized_RMSE', fontsize=14)
+    axs.grid(True)
+    axs.set_ylim([0, max(Normalized_CEDAR_RMSE) + max(Normalized_CEDAR_RMSE)/5])
+    axs.set_xlim([0, max(CEDAR_widths) + 1])
 
     # Add legends with titles to the subplots
-    axs[0].legend()
-    axs[1].legend()
-
-    # Adjust the spacing between the subplots
-    plt.subplots_adjust(wspace=0.4)
-
+    axs.legend()
     # Save the figure as a JPEG image in a specific directory
     save_path = os.path.join('../res/images', 'normalized_RMSE.jpg')
 
