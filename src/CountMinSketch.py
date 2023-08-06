@@ -40,7 +40,7 @@ class CountMinSketch:
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
         self.mode=mode
-        self.width, self.depth, self.num_flows = width, depth, num_flows# depth is equals to number of hash functions
+        self.width, self.depth, self.num_flows = width, depth, num_flows  # depth is equals to number of hash functions
         if self.mode=='Morris':
             self.estimate_counter = MorrisCounter(cntrSize=4, numCntrs=depth * width, a=10, cntrMaxVal=1000, verbose=[])
         else:
