@@ -50,24 +50,24 @@ class CountMinSketch:
     def incFlow(self, flow):
         # Increment the counters for the given flow by hashing and updating the appropriate counter values
         for seed in range(self.depth):
-            index_in_1D_array = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            counterIndex = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             if self.mode=='Morris':
-                self.estimate_counter.incCntr(cntrIdx=index_in_1D_array, factor=1, verbose=[], mult=False)
+                self.estimate_counter.incCntr(cntrIdx=counterIndex, factor=1, verbose=[], mult=False)
             else:
-                self.flow_counter.cntrIncrement(flowIdx=index_in_1D_array, factor=1)
+                self.flow_counter.cntrIncrement(flowIdx=counterIndex, factor=1)
 
     def queryFlow(self, flow):
         # Query the minimum counter value for the given flow by hashing and finding the minimum value among the appropriate counters
-        min_num = math.inf
+        minNum = math.inf
         for seed in range(self.depth):
-            index_in_1D_array = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
+            counterIndex = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             if self.mode=='Morris':
-                estimate = self.estimate_counter.queryCntr(index_in_1D_array)
-                min_num = min(estimate['val'], min_num)
+                estimate = self.estimate_counter.queryCntr(counterIndex)
+                minNum = min(estimate['val'], minNum)
             else:
-                estimate = self.flow_counter.queryCntr(index_in_1D_array)
-                min_num = min(estimate, min_num)
-        return min_num
+                estimate = self.flow_counter.queryCntr(counterIndex)
+                minNum = min(estimate, minNum)
+        return minNum
 
     def runSimulationAndCalculateNormalizedRMSE(self):
         """"
@@ -78,7 +78,7 @@ class CountMinSketch:
         """
         numOfIncrements = 1000
         realValCntr = np.zeros(self.num_flows)
-        error_value = [0]* numOfIncrements 
+        errorValue = [0]* numOfIncrements 
         # Increment the counters randomly and update the real values
         for i in range(numOfIncrements):
             # Choose a random flow to increment
@@ -88,9 +88,9 @@ class CountMinSketch:
             # Update the corresponding real value counter
             realValCntr[flow] += 1
             # Compute the error between the estimated and real frequencies for the flow and append it to the error_value list
-            error_value[i]= abs(realValCntr[flow] - self.queryFlow(flow)) / realValCntr[flow]
+            errorValue[i]= abs(realValCntr[flow] - self.queryFlow(flow)) / realValCntr[flow]
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the error_value list
-        RMSE = math.sqrt(sum(error ** 2 for error in error_value) / numOfIncrements)
+        RMSE = math.sqrt(sum(error ** 2 for error in errorValue) / numOfIncrements)
         Normalized_RMSE = RMSE / numOfIncrements
         if self.mode=='Morris':
             # Write the results to a file and return them as a dictionary
@@ -130,8 +130,8 @@ def main(num_flows=100):
     depth = 2  # default value
     counter_types = ['Morris', 'CEDAR']
     for counter_type in counter_types:
-        for w in range(2, num_flows//2, 3):
-            cmc = CountMinSketch(width=w, depth=depth, num_flows=num_flows, mode=counter_type)
+        for width in range(2, num_flows//2, 3):
+            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_type)
             cmc.runSimulationAndCalculateNormalizedRMSE()
     plot_counters()
 
