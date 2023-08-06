@@ -78,7 +78,7 @@ class CountMinSketch:
         """
         numOfIncrements = 1000
         realValCntr = np.zeros(self.num_flows)
-        error_value = np.zeros(numOfIncrements)
+        error_value = [0]* numOfIncrements 
         # Increment the counters randomly and update the real values
         for i in range(numOfIncrements):
             # Choose a random flow to increment
