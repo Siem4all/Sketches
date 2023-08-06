@@ -31,7 +31,7 @@ class CountMinSketch:
         - width (int): the number of counters per row.
         - depth (int): the number of rows or hash functions.
         - num_flows (int): the total number of flows to be estimated.
-        - cntrMaxVal (int): the maximum counter value.
+        - mode : It is either of the counter types that i use.
        Attributes:
         - counters: a CntrMaster object that holds the counter values for the sketch.
         - pair: a tuple of row and column indices used to compute the corresponding counter index.
@@ -41,23 +41,25 @@ class CountMinSketch:
          """
         self.mode=mode
         self.width, self.depth, self.num_flows = width, depth, num_flows  # depth is equals to number of hash functions
-        if self.mode=='Morris':
-            self.estimate_counter = MorrisCounter(cntrSize=4, numCntrs=depth * width, a=10, cntrMaxVal=1000, verbose=[])
+        if self.mode=='Morris':  
+            self.estimate_counter = MorrisCounter(cntrSize=4, numCntrs=depth * width, a=10, cntrMaxVal=1000, verbose=[]) # Initialize the Morris counter
         else:
-            self.flow_counter = CEDARCounter(cntrSize=4, numCntrs=depth * width, cntrMaxVal=1000)
+            self.flow_counter = CEDARCounter(cntrSize=4, numCntrs=depth * width, cntrMaxVal=1000)  # Initialize the CEDAR counter
         self.pair = [f"{i},{j}" for i in range(depth) for j in range(width)]
 
     def incFlow(self, flow):
-        # Increment the counters for the given flow by hashing and updating the appropriate counter values
+        """
+        Increment either the Morris or CEDAR counters for the given flow by hashing and updating the appropriate counter values
+        """
         for seed in range(self.depth):
             counterIndex = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
             if self.mode=='Morris':
-                self.estimate_counter.incCntr(cntrIdx=counterIndex, factor=1, verbose=[], mult=False)
+                self.estimate_counter.incCntr(cntrIdx=counterIndex, factor=1, verbose=[], mult=False)  
             else:
-                self.flow_counter.cntrIncrement(flowIdx=counterIndex, factor=1)
+                self.flow_counter.cntrIncrement(flowIdx=counterIndex, factor=1)  
 
     def queryFlow(self, flow):
-        # Query the minimum counter value for the given flow by hashing and finding the minimum value among the appropriate counters
+        # Query the minimum Morris or CEDAR counter value for the given flow by hashing and finding the minimum value among the appropriate counters
         minNum = math.inf
         for seed in range(self.depth):
             counterIndex = self.pair.index(f'{seed},{mmh3.hash(str(flow), seed) % self.width}')
@@ -71,10 +73,10 @@ class CountMinSketch:
 
     def runSimulationAndCalculateNormalizedRMSE(self):
         """"
-        This simulation calculates the Root Mean Square Error (RMSE) and Normalized RMSE for differenr increments.
-        i have updates the counter self.numOfIncrements times by generating random flow from 0 to self.num_flows.
+        This simulation calculates the Root Mean Square Error (RMSE) and Normalized RMSE for different counters types.
+        i have updates the counter numOfIncrements times by generating random flow from 0 to self.num_flows.
         It stores the real value at the index of the flow and it queries the estimated value of the flow from the array counter after
-        incrementing it using the methodology of count min sketch.
+        incrementing it using the methodology of count min sketch. 
         """
         numOfIncrements = 1000
         realValCntr = np.zeros(self.num_flows)
@@ -87,9 +89,9 @@ class CountMinSketch:
             self.incFlow(flow)
             # Update the corresponding real value counter
             realValCntr[flow] += 1
-            # Compute the error between the estimated and real frequencies for the flow and append it to the error_value list
+            # Compute the error between the estimated and real frequencies for the flow and update the error_value at that index
             errorValue[i]= abs(realValCntr[flow] - self.queryFlow(flow)) / realValCntr[flow]
-        # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the error_value list
+        # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the error_value list 
         RMSE = math.sqrt(sum(error ** 2 for error in errorValue) / numOfIncrements)
         Normalized_RMSE = RMSE / numOfIncrements
         if self.mode=='Morris':
