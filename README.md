@@ -1,4 +1,4 @@
-# Count-Min-Sketch
+# Sketches
 This is a Python script that implements a Count-Min Sketch data structure for estimating flow frequencies. The class SketchStatistics takes in the width, depth, number of flows, and number of increments as parameters. The sketch uses hash functions to increment and query counter values for each flow. The incFlow method increments the counters for the given flow by hashing and updating the appropriate counter values. The queryFlow method queries the minimum counter value for the given flow by hashing and finding the minimum value among the appropriate counters.
 
 The runSimulationAndCalculateNormalizedRMSE method is used to simulate the Count-Min Sketch and calculate the Normalized RMSE over a set of flows. It increments the counters randomly and updates the real values. It computes the error between the estimated and real frequencies for the flow and appends it to the error_value list. It then computes the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the error_value list. Finally, it writes the results to a file and returns them as a dictionary.
