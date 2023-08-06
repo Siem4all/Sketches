@@ -4,13 +4,13 @@ import math
 # from   pathlib import Path
 # from builtins import True False
 # import pickle
-import math, time, random
+import math, random
 from printf import printf
 import settings
 import numpy as np
 
 
-class CntrMaster(object):
+class MorrisCounter(object):
     """
     Generate, check and parse counters
     """
@@ -97,7 +97,7 @@ class CntrMaster(object):
         return [{'cntrVec': np.binary_repr(cntrLoInt, self.cntrSize), 'val': self.cntrInt2num(cntrLoInt)},
                 {'cntrVec': np.binary_repr(cntrHiInt, self.cntrSize), 'val': self.cntrInt2num(cntrHiInt)}]
 
-    def __init__(self, cntrSize=4, numCntrs=1, a=None, cntrMaxVal=None, verbose=[]):
+    def __init__(self, cntrSize, numCntrs, a, cntrMaxVal, verbose=[]):
 
         """
         Initialize an array of cntrSize Morris counters at the given mode. The cntrs are initialized to 0.
@@ -207,7 +207,7 @@ def printAllVals(cntrSize=4, a=10, verbose=[]):
     The prints are sorted in an increasing order of values.
     """
     print('running printAllVals')
-    myCntrMaster = CntrMaster(cntrSize=cntrSize, a=a, verbose=verbose)
+    myCntrMaster = MorrisCounter(cntrSize=cntrSize, a=a, verbose=verbose)
     listOfVals = []
     for i in range(1 << cntrSize):
         cntr = np.binary_repr(i, cntrSize)
@@ -231,10 +231,5 @@ def printAllCntrMaxVals(cntrSizes=[], verbose=[settings.VERBOSE_RES]):
     return
 
 
-if __name__ == '__main__':
-    counter = CntrMaster(cntrSize=4, numCntrs=10, a=10, cntrMaxVal=1000, verbose=[])
-    v=counter.incCntr(cntrIdx=3, factor=1, verbose=[], mult=False)
-    print(v['val'], counter.cntrs, counter.queryCntr(3))
-    estimate=counter.queryCntr(3)
-    print(estimate['val'])
+
 
