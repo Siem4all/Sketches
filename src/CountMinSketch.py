@@ -122,12 +122,13 @@ class CountMinSketch:
             # Append the simulation results to the appropriate file
             with open(f'../res/pcl_files/CEDAR_increments.pcl', 'ab') as f:
                 pickle.dump(simulation_results, f)
-        # Overall, this function simulates a Count-Min Sketch and calculates the Normalized RMSE over a set of flows.
-        # It provides a way to evaluate the accuracy of the Count-Min Sketch and compare different increments.
-        # The Normalized RMSE is a useful metric for measuring the accuracy of the Count-Min Sketch in estimating the frequencies.
-
 
 def main(num_flows=100):
+    """
+    This starts by removing the old files if they exists using remove_existing_files method. It iterate the first for loop
+    based on the list of counter types and tranfer the counter type as a mode to the CountMinSketch class to use either the Morris
+    or CEDAR methodology.
+    """                                                                                                          
     remove_existing_files()
     depth = 2  # default value
     counter_types = ['Morris', 'CEDAR']
