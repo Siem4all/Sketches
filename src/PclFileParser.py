@@ -3,7 +3,10 @@ import pickle
 import matplotlib.pyplot as plt
 
 def plot_counters():
-    # Load the dictionaries from the pcl files
+    """
+    Load the dictionaries from the pcl files and plot the Normalized_Morris_RMSE in Y-axis and the counter Width in X-axis f
+    or both the counter types to compare and understand their difference easly. 
+    """
     Morris_increments = []
     with open('../res/pcl_files/Morris_increments.pcl', 'rb') as f:
         while True:
