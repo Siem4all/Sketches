@@ -10,7 +10,7 @@ import settings
 import numpy as np
 
 
-class MorrisCounter(object):
+class MorrisCntr(object):
     """
     Generate, check and parse counters
     """
@@ -151,7 +151,7 @@ class MorrisCounter(object):
         settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='Morris')
         return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
 
-    def incCntr(self, cntrIdx=0, factor=1, verbose=[], mult=False):
+    def incCntr(self, cntrIdx=0, factor=1):
         """
         Increase a counter by a given factor.
         Input:
@@ -178,6 +178,8 @@ class MorrisCounter(object):
           - cntrDict['cntrVec'] - the binary counter.
           - cntrDict['val']  - the counter's value.
         """
+        verbose=[]
+        mult=False
         settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='Morris')
         targetVal = (self.cntr2num(self.cntrs[cntrIdx]) * factor) if mult else (
                 self.cntr2num(self.cntrs[cntrIdx]) + factor)
@@ -197,7 +199,7 @@ class MorrisCounter(object):
                 optionalModifiedCntr[1]['val'] - optionalModifiedCntr[0]['val'])
             self.cntrs[cntrIdx] = optionalModifiedCntr[1]['cntrVec'] if (random.random() < probOfFurtherInc) else \
                 optionalModifiedCntr[0]['cntrVec']
-        return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
+        return self.cntr2num(self.cntrs[cntrIdx])
 
 
 def printAllVals(cntrSize=4, a=10, verbose=[]):
@@ -207,7 +209,7 @@ def printAllVals(cntrSize=4, a=10, verbose=[]):
     The prints are sorted in an increasing order of values.
     """
     print('running printAllVals')
-    myCntrMaster = MorrisCounter(cntrSize=cntrSize, a=a, verbose=verbose)
+    myCntrMaster = MorrisCntr(cntrSize=cntrSize, a=a, verbose=verbose)
     listOfVals = []
     for i in range(1 << cntrSize):
         cntr = np.binary_repr(i, cntrSize)

@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class CEDARCounter(object):
+class CEDARCntr(object):
 
     def __init__(self, cntrSize, numCntrs, cntrMaxVal):
         """
@@ -18,7 +18,7 @@ class CEDARCounter(object):
         self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
         self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
         self.cntrMaxVec = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
-        self.calcCntrMaxVal = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
+        self.calcCntrMaxVal = (1 << self.cntrSize)-1  # the max counter value which is 2**cntrSize
         self.estimate_array = np.zeros(self.estimator_size)  # Initialize the estimator array to zero
         self.estimate_array[self.estimator_size - 1] = cntrMaxVal
         self.array_diff = np.zeros(self.estimator_size - 1)  # array of differences between estimators
@@ -30,25 +30,25 @@ class CEDARCounter(object):
         for i in range(1, self.estimator_size - 1):
             self.estimate_array[i] = self.estimate_array[i - 1] + self.array_diff[i - 1]  # D[i]=A[i+1]-A[i]
 
-    def cntrIncrement(self, flowIdx, factor=1):
+    def incCntr(self, cntrIdx, factor):
         """
 
         This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
         value, i add 1 to the target value and save it as binary.
         """
-        targetVal = int(self.cntrs[flowIdx], 2)
+        targetVal = int(self.cntrs[cntrIdx], 2)
         if targetVal < self.calcCntrMaxVal:
-            self.cntrs[flowIdx] = str(bin(targetVal + factor)[2:].zfill(self.cntrSize))
-        else:
-            self.cntrs[flowIdx] = self.cntrMaxVec
+            self.cntrs[cntrIdx] = str(bin(targetVal + factor)[2:].zfill(self.cntrSize))
 
-    def queryCntr(self, flowIdx):
+        return self.estimate_array[int(self.cntrs[cntrIdx], 2)]
+
+    def queryCntr(self, cntrIdx):
         """
 
         Here i used the variable flowIdx to get the binary number from cntr list, i converted it to number in order to use it as
          a pointer to the estimator array to get the value of the estimator array.
         """
-        return self.estimate_array[int(self.cntrs[flowIdx], 2)]
+        return self.estimate_array[int(self.cntrs[cntrIdx], 2)]
 
 
 
