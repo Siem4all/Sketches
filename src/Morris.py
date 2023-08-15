@@ -149,7 +149,7 @@ class MorrisCntr(object):
             - cntrDict['cntrVec'] is the counter's binary representation; cntrDict['val'] is its value.        
         """
         settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='Morris')
-        return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
+        return self.cntr2num(self.cntrs[cntrIdx])
 
     def incCntr(self, cntrIdx=0, factor=1):
         """

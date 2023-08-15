@@ -1,80 +1,53 @@
 import os
 import pickle
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
 
 def plot_counters():
     """
-    Load the dictionaries from the pcl files and plot the Normalized_Morris_RMSE in Y-axis and the counter Width in X-axis f
-    or both the counter types to compare and understand their difference easily.
+    Load the dictionaries from the pcl files and plot the Normalized_Morris_RMSE in Y-axis and the counter Width in X-axis for both the counter types to compare and understand their difference easily.
     """
-    Morris_increments = []
-    with open('../res/pcl_files/Morris_increments.pcl', 'rb') as f:
+    WrRmse = []
+    with open('../res/pcl_files/WrRmse.pcl', 'rb') as f:
         while True:
             try:
                 my_dict = pickle.load(f)
-                Morris_increments.append(my_dict)
+                WrRmse.append(my_dict)
             except EOFError:
                 break
-    realCounter_increments = []
-    with open('../res/pcl_files/realCounter_increments.pcl', 'rb') as f:
-        while True:
-            try:
-                my_dict = pickle.load(f)
-                realCounter_increments.append(my_dict)
-            except EOFError:
-                break
-    '''
-    CEDAR_increments = []
-    with open('../res/pcl_files/CEDAR_increments.pcl', 'rb') as f:
-        while True:
-            try:
-                my_dict = pickle.load(f)
-                CEDAR_increments.append(my_dict)
-            except EOFError:
-                break
-    '''
-    # Extract the data from the dictionaries
-    Morris_widths = []
-    Normalized_Morris_RMSE = []
-    realCounter_widths= []
-    Normalized_realCounter_RMSE = []
-    # CEDAR_widths = []
-    # Normalized_CEDAR_RMSE = []
-    for m in Morris_increments:
-        Morris_widths.append(m['width'])
-        Normalized_Morris_RMSE.append(m['Normalized_RMSE'])
-    for r in realCounter_increments:
-        realCounter_widths.append(r['width'])
-        Normalized_realCounter_RMSE.append(r['Normalized_RMSE'])
-    '''
-    for c in CEDAR_increments:
-        CEDAR_widths.append(c['width'])
-        Normalized_CEDAR_RMSE.append(c['Normalized_RMSE'])
-    '''
-    # Create a figure and axis object
-    fig, axs = plt.subplots()
 
-    # Plot the depth vs. avg_error data on the first subplot
-    #  axs.plot(CEDAR_widths, Normalized_CEDAR_RMSE, '-o', linewidth=2, markersize=8, color='green', label='CEDAR')
-    axs.plot(Morris_widths, Normalized_Morris_RMSE, '-o', linewidth=2, markersize=8, color='blue', label='Morris')
-    axs.plot(realCounter_widths, Normalized_realCounter_RMSE, '-o', linewidth=2, markersize=8, color='brown', label='realCounter')
-    axs.set_xlabel('Width', fontsize=12)
-    axs.set_ylabel('Normalized_RMSE ', fontsize=12)
-    axs.set_title('width vs. Normalized_RMSE', fontsize=14)
-    axs.grid(True)
-    axs.set_ylim([0, max(Normalized_Morris_RMSE) + max(Normalized_Morris_RMSE)/2])
-    axs.set_xlim([0, max(realCounter_widths) + 1])
+    # Separate data for each mode
+    morris_data = [entry for entry in WrRmse if entry['mode'] == 'Morris']
+    cedar_data = [entry for entry in WrRmse if entry['mode'] == 'CEDAR']
+    realcounter_data = [entry for entry in WrRmse if entry['mode'] == 'realCounter']
+    # Extract width and Normalized_RMSE values for each mode
+    morris_width = [entry['width'] for entry in morris_data]
+    morris_rmse = [entry['Normalized_RMSE'] for entry in morris_data]
 
-    # Add legends with titles to the subplots
-    axs.legend()
-    # Save the figure as a JPEG image in a specific directory
-    save_path = os.path.join('../res/images', 'Rd_Normalized_RMSE.jpg')
+    cedar_width = [entry['width'] for entry in cedar_data]
+    cedar_rmse = [entry['Normalized_RMSE'] for entry in cedar_data]
 
-    # Check if the file already exists and remove it if it does
-    if os.path.exists(save_path):
-        os.remove(save_path)
+    realcounter_width = [entry['width'] for entry in realcounter_data]
+    realcounter_rmse = [entry['Normalized_RMSE'] for entry in realcounter_data]
 
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    # Plotting with markers and connecting points based on width
+    plt.scatter(morris_width, morris_rmse, label='Morris', marker='o')
+    plt.scatter(cedar_width, cedar_rmse, label='CEDAR', marker='s')
+    plt.scatter(realcounter_width, realcounter_rmse, label='realCounter', marker='^')
 
-    # Show the plot
-    plt.show()
+    # Connect points based on width
+    plt.plot((morris_width, cedar_width, realcounter_width), (morris_rmse, cedar_rmse, realcounter_rmse), color='pink')
+    plt.plot(morris_width, morris_rmse, linestyle='-', color='blue')
+    plt.plot(cedar_width, cedar_rmse, linestyle='-', color='orange')
+    plt.plot(realcounter_width, realcounter_rmse, linestyle='-', color='green')
+
+    plt.xlabel('Width')
+    plt.ylabel('normRmseAvg')
+    plt.title('normRmseAvg vs. Width')
+    plt.legend()
+
+    # Save the plot as a PDF file
+    with PdfPages('../res/WrRMSE.pdf') as pdf:
+        pdf.savefig(bbox_inches='tight')
+        plt.close()
