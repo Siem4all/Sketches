@@ -22,7 +22,7 @@ class CEDARCntr(object):
         self.estimate_array = np.zeros(self.estimator_size)  # Initialize the estimator array to zero
         self.estimate_array[self.estimator_size - 1] = cntrMaxVal
         self.array_diff = np.zeros(self.estimator_size - 1)  # array of differences between estimators
-        self.delta = 0.0001
+        self.delta = 0.1
         self.array_diff[0] = 1 / (1 - (self.delta ** 2))  # set first difference
         for l in range(1, self.estimator_size - 1):
             self.array_diff[l] = 1 + 2 * (self.delta ** 2) * sum(
