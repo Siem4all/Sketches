@@ -64,7 +64,7 @@ class PclFileParser(object):
             except EOFError:
                 break
 
-    def NRMSEVsWidthPlot(self, modes=['realCounter', 'CEDAR', 'Morris']):
+    def NRMSEVsWidthPlot(self, modes):
         """
         Generate a plot showing the Normalized_RMSE vs. width.
         """
