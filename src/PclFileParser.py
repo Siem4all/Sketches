@@ -15,7 +15,7 @@ LEGEND_FONT_SIZE_SMALL = 5
 
 class PclFileParser(object):
     """
-    Parse result files, and generate plots from them.
+    Parse pcl files, and generate plots from them.
     """
 
     # Set the parameters of the plot (sizes of fonts, legend, ticks etc.).
