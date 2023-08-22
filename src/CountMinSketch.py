@@ -48,7 +48,7 @@ class CountMinSketch:
 
     def incNQueryFlow(self, flow):
         """
-        When an flow arrives, it is hashed using the hash functions, and the corresponding counters are incremented.
+        When a flow arrives, it is hashed using the hash functions, and the corresponding counters are incremented.
         At the end,  the minimum value of the corresponding counters is turned as the estimate.
         """
         cntrValAfterInc = [0]*self.depth
