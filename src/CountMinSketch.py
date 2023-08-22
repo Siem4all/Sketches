@@ -115,6 +115,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-    parser = PclFileParser.PclFileParser()
-    parser.rdPcl()
-    parser.NRMSEVsWidthPlot()
+    arser = PclFileParser.PclFileParser()  # Create an instance of the PclFileParser class
+    parser.rdPcl()  # Call the 'rdPcl' method of the PclFileParser instance
+    parser.NRMSEVsWidthPlot()  # Call the 'NRMSEVsWidthPlot' method of the PclFileParser instance
