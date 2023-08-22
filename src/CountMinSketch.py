@@ -115,15 +115,11 @@ def main(counter_types):
 if __name__ == '__main__':
     # Define a list of counter types
     counter_types = ['CEDAR', 'Morris','realCounter']
-
     # Call the main function with the list of counter types as an argument
     main(counter_types)
-
     # Create a PclFileParser object
     parser = PclFileParser.PclFileParser()
-
     # Read in data from a PCL file
     parser.rdPcl()
-
     # Generate a plot showing NRMSE versus width for each counter type in the counter_types list
     parser.NRMSEVsWidthPlot(modes=counter_types)
