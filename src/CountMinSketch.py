@@ -47,6 +47,10 @@ class CountMinSketch:
         self.pair = [(i, j) for i in range(depth) for j in range(width)]
 
     def incNQueryFlow(self, flow):
+        """
+        each flow is hashed using each of the hash functions, and the corresponding counters in the array are incremented.
+        At the end, the minimum value of the counters is returned.
+        """
         cntrValAfterInc = [0]*self.depth
         for mappedCntr in range(self.depth):
             counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
