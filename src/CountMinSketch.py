@@ -32,9 +32,12 @@ class CountMinSketch:
         - The pair attribute is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
-        self.mode, self.counter_type, self.cntrSize,  self.cntrMaxVal=mode, mode, cntrSize, cntrMaxVal
+        self.mode=mode
+        self.counter_type=mode
         self.width, self.depth, self.num_flows = width, depth, num_flows
         self.numCntrs=self.width*self.depth
+        self.cntrSize=cntrSize
+        self.cntrMaxVal=cntrMaxVal
         if self.mode=='Morris':
             self.counter_type = MorrisCntr(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal, verbose=[]) # Initialize the Morris counter
         elif self.mode=='realCounter':
@@ -47,10 +50,6 @@ class CountMinSketch:
         self.pair = [(i, j) for i in range(depth) for j in range(width)]
 
     def incNQueryFlow(self, flow):
-        """
-        each flow is hashed using each of the hash functions, and the corresponding counters in the array are incremented.
-        At the end, the minimum value of the counters is returned.
-        """
         cntrValAfterInc = [0]*self.depth
         for mappedCntr in range(self.depth):
             counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
@@ -99,7 +98,7 @@ class CountMinSketch:
         with open(f'../res/pcl_files/RdRmse.pcl', 'ab') as f:
             pickle.dump(simulation_results, f)
 
-def main():
+def main(counter_types):
     """
     It iterate the first for loop based on the list of counter types and tranfer the counter type as a mode to the CountMinSketch class
     to calculate Normalized_RMSE using Morris, real counter or CEDAR architecture.
@@ -107,14 +106,14 @@ def main():
     remove_existing_files()
     num_flows     =20
     depth         = 2
-    counter_types = ['CEDAR', 'Morris','realCounter']
     for counter_type in counter_types:
         for width in range(2, num_flows//2, 2):
             cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_type, cntrSize=6, cntrMaxVal=1000)
             cmc.calculateNormalizedRMSE()
 
 if __name__ == '__main__':
-    main()
-    arser = PclFileParser.PclFileParser()  # Create an instance of the PclFileParser class
-    parser.rdPcl()  # Call the 'rdPcl' method of the PclFileParser instance
-    parser.NRMSEVsWidthPlot()  # Call the 'NRMSEVsWidthPlot' method of the PclFileParser instance
+    counter_types = ['CEDAR', 'Morris','realCounter']
+    main(counter_types)
+    parser = PclFileParser.PclFileParser()
+    parser.rdPcl()
+    parser.NRMSEVsWidthPlot(modes=counter_types)
