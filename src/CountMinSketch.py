@@ -32,12 +32,9 @@ class CountMinSketch:
         - The pair attribute is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
-        self.mode=mode
-        self.counter_type=mode
+        self.mode, self.counter_type, self.cntrSize, self.cntrMaxVal=mode, mode, cntrSize, cntrMaxVal
         self.width, self.depth, self.num_flows = width, depth, num_flows
         self.numCntrs=self.width*self.depth
-        self.cntrSize=cntrSize
-        self.cntrMaxVal=cntrMaxVal
         if self.mode=='Morris':
             self.counter_type = MorrisCntr(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal, verbose=[]) # Initialize the Morris counter
         elif self.mode=='realCounter':
@@ -50,6 +47,10 @@ class CountMinSketch:
         self.pair = [(i, j) for i in range(depth) for j in range(width)]
 
     def incNQueryFlow(self, flow):
+        """
+        When an flow arrives, it is hashed using the hash functions, and the corresponding counters are incremented.
+        At the end,  the minimum value of the corresponding counters is turned as the estimate.
+        """
         cntrValAfterInc = [0]*self.depth
         for mappedCntr in range(self.depth):
             counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
