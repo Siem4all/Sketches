@@ -1,9 +1,12 @@
-import os
-
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+import matplotlib.pylab as pylab
+import numpy as np, pandas as pd
+from pandas._libs.tslibs import period
+from printf import printf, printFigToPdf
 import pickle
+import settings
 
 MARKER_SIZE = 16
 MARKER_SIZE_SMALL = 1
@@ -15,7 +18,7 @@ LEGEND_FONT_SIZE = 14
 LEGEND_FONT_SIZE_SMALL = 5
 
 
-class PclFileParser(object):
+class ResFileParser(object):
     """
     Parse result files, and generate plots from them.
     """
@@ -39,7 +42,7 @@ class PclFileParser(object):
 
     def __init__(self):
         """
-        Initialize a pcl_file_parser, used to parse result files, and generate plots.
+        Initialize a Res_file_parser, used to parse result files, and generate plots.
         """
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
@@ -66,28 +69,38 @@ class PclFileParser(object):
             except EOFError:
                 break
 
-    def NRMSEVsWidthPlot(self, modes=['realCounter', 'CEDAR', 'Morris']):
+    def genErVsCntrSizePlot(self, modes=['realCounter', 'CEDAR', 'Morris']):
         """
-        Generate a plot showing the Normalized_RMSE vs. width.
+        Generate a plot showing the error as a function of the counter's size.
         """
 
         self.setPltParams()  # set the plot's parameters (formats of lines, markers, legends etc.).
         _, ax = plt.subplots()
+        all_keys = []
+        all_values = {}
+        index = 0
         for mode in modes:
-            pointsOfThisMode = [point for point in self.points if point['mode'] == mode]
-            if pointsOfThisMode == []:
-                print(f'No points found for mode {mode}')
-                continue
-            widths = [point['width'] for point in pointsOfThisMode]
-            Normalized_RMSE = [point['Normalized_RMSE'] for point in pointsOfThisMode]
-            ax.plot(widths, Normalized_RMSE,
-                    color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
-                    markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=f'{mode}', mfc='none')
-        plt.xlabel('Width')
+            all_keys.append(f'{mode}_width')
+            all_keys.append(f'{mode}_NRMSE')
+            for index in range(index, len(all_keys)):
+                pointsOfThisMode = [point for point in self.points if point['mode'] == mode]
+                if pointsOfThisMode == []:
+                    print(f'No points found for mode {mode}')
+                    continue
+                all_values[f'{all_keys[index]}'] = [point['width'] for point in pointsOfThisMode]
+                all_values[f'{all_keys[index + 1]}'] = [point['Normalized_RMSE'] for point in pointsOfThisMode]
+                print(all_keys[index], all_keys[index + 1])
+                ax.plot(all_values[f'{all_keys[index]}'], all_values[f'{all_keys[index + 1]}'],
+                        color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
+                        markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=f'{mode}', mfc='none')
+                index += 2
+                break
         plt.ylabel('Normalized_RMSE')
-        plt.title('Normalized_RMSE vs. Width')
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys(), fontsize=LEGEND_FONT_SIZE)
-        plt.savefig('../res/RdRMSE.pdf', bbox_inches='tight')
+        plt.savefig ('../res/RdRMSE.pdf', bbox_inches='tight')
 
+v = ResFileParser()
+v.rdPcl()
+v.genErVsCntrSizePlot()

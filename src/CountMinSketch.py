@@ -3,18 +3,19 @@ import mmh3
 import numpy as np
 import os
 import pickle
+import PclFileParser
 
 from Morris import MorrisCntr
 from CEDAR import CEDARCntr
 from RealCounter import RealCntr
-
-from PclFileParser import plot_counters
 from printf import printf
 
 def remove_existing_files():
     # Removes the specified files if they exist.
     if os.path.exists('../res/pcl_files/RdRmse.pcl'):
         os.remove('../res/pcl_files/RdRmse.pcl')
+    if os.path.exists('../res/RdRMSE.res'):
+        os.remove('../res/RdRMSE.res')
 
 class CountMinSketch:
     def __init__(self, width, depth, num_flows, mode, cntrSize, cntrMaxVal):
@@ -48,6 +49,12 @@ class CountMinSketch:
 
         self.pair = [(i, j) for i in range(depth) for j in range(width)]
 
+    def incNQueryFlow(self, flow):
+        cntrValAfterInc = [0]*self.depth
+        for mappedCntr in range(self.depth):
+            counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
+            cntrValAfterInc[mappedCntr]=self.counter_type.incCntr(cntrIdx=counterIndex, factor=1)
+        return min(cntrValAfterInc)
     def incFlow(self, flow):
         # increment the mapped counters values
         for seed in range(self.depth):
@@ -60,8 +67,6 @@ class CountMinSketch:
             counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % self.width))
             minNum = min(self.counter_type.queryCntr(counterIndex), minNum)
         return minNum
-
-
     def calculateNormalizedRMSE(self):
         """
         This simulation calculates the Read Root Mean Square Error (RMSE) and Normalized RMSE for different counters types.
@@ -69,21 +74,20 @@ class CountMinSketch:
         incrementing it using the methodology of count min sketch.
         """
         numOfIncrements = 1000
-        realCntr = np.zeros(self.num_flows)
-        sumOfSqrErors=0
+        realCntr        = np.zeros(self.num_flows)
+        sumOfAllErors   = 0
         # Increment the counters randomly and update the real values
-        for incNum in range(numOfIncrements):
+        for _ in range(numOfIncrements): #$$$ Great. As you can realize, the code now is much simpler, faster and more readable!
             # Choose a random flow to increment
             flow = np.random.randint(self.num_flows)
             realCntr[flow] += 1  # increment the real counter value of the flow upon its arrival
-            self.incFlow(flow)
-            sumOfSqrErors +=((realCntr[flow] - self.queryFlow(flow))/realCntr[flow])**2
-        # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the sumOfSqrErors
-        RMSE = math.sqrt(sumOfSqrErors/numOfIncrements)
+            sumOfAllErors  +=((realCntr[flow] - self.incNQueryFlow(flow))/realCntr[flow])**2
+        # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all flows using the sumOfAllErors
+        RMSE            = math.sqrt(sumOfAllErors/numOfIncrements)
         Normalized_RMSE =  RMSE/numOfIncrements
         resFile = open (f'../res/RdRMSE.res', 'a+')
-        printf(resFile, '\nmode={}, numOfIncrements={}, numCntrs={}, sumOfSqrErors={}, RMSE={}, Normalized_RMSE={}\n'.format(self.mode,
-               numOfIncrements, self.numCntrs, sumOfSqrErors, RMSE, Normalized_RMSE))
+        printf(resFile, '\nmode={}, numOfIncrements={}, numCntrs={}, sumOfAllErors={}, RMSE={}, Normalized_RMSE={}\n'.format(self.mode,
+               numOfIncrements, self.numCntrs, sumOfAllErors, RMSE, Normalized_RMSE))
         # Write the results to a file and return them as a dictionary
         simulation_results = {
             'mode':self.mode,
@@ -100,15 +104,16 @@ def main():
     to calculate Normalized_RMSE using Morris, real counter or CEDAR architecture.
     """
     remove_existing_files()
-    num_flows=20
-    depth = 2  # default value
+    num_flows     =20
+    depth         = 2
     counter_types = ['CEDAR', 'Morris','realCounter']
     for counter_type in counter_types:
         for width in range(2, num_flows//2, 2):
             cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_type, cntrSize=6, cntrMaxVal=1000)
             cmc.calculateNormalizedRMSE()
-    plot_counters()
-
 
 if __name__ == '__main__':
     main()
+    parser = PclFileParser.PclFileParser()
+    parser.rdPcl()
+    parser.NRMSEVsWidthPlot()
