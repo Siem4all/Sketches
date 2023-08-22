@@ -51,7 +51,7 @@ class PclFileParser(object):
         self.markerOfMode = {'realCounter': 'v',
                              'CEDAR': '<',
                              'Morris': '>'}
-        self.points = []
+        self.points      = []
 
     def rdPcl(self):
         """
