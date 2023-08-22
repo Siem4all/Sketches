@@ -114,6 +114,6 @@ def main(counter_types):
 if __name__ == '__main__':
     counter_types = ['CEDAR', 'Morris','realCounter']
     main(counter_types)
-    parser = PclFileParser.PclFileParser()
+    parser        = PclFileParser.PclFileParser()
     parser.rdPcl()
     parser.NRMSEVsWidthPlot(modes=counter_types)
