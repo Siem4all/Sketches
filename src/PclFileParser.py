@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker
 import pickle
 
-MARKER_SIZE = 16
-MARKER_SIZE_SMALL = 1
-LINE_WIDTH = 3
-LINE_WIDTH_SMALL = 1
-FONT_SIZE = 20
-FONT_SIZE_SMALL = 5
-LEGEND_FONT_SIZE = 14
+MARKER_SIZE            = 16
+MARKER_SIZE_SMALL      = 1
+LINE_WIDTH             = 3
+LINE_WIDTH_SMALL       = 1
+FONT_SIZE              = 20
+FONT_SIZE_SMALL        = 5
+LEGEND_FONT_SIZE       = 14
 LEGEND_FONT_SIZE_SMALL = 5
 
 
