@@ -78,7 +78,7 @@ class CountMinSketch:
         realCntr        = np.zeros(self.num_flows)
         sumOfAllErors   = 0
         # Increment the counters randomly and update the real values
-        for _ in range(numOfIncrements): #$$$ Great. As you can realize, the code now is much simpler, faster and more readable!
+        for _ in range(numOfIncrements): 
             # Choose a random flow to increment
             flow = np.random.randint(self.num_flows)
             realCntr[flow] += 1  # increment the real counter value of the flow upon its arrival
