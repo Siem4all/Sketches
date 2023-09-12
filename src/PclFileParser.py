@@ -43,14 +43,16 @@ class PclFileParser(object):
         self.labelOfMode = {}
 
         # The colors used for each alg's plot, in the dist' case
-        self.colorOfMode = {'realCounter': 'green',
-                            'CEDAR': 'blue',
-                            'Morris': 'red'}
+        self.colorOfMode = {'F2P'         : 'green',
+                             'realCounter': 'blue',
+                            'CEDAR'       : 'brown',
+                            'Morris'      : 'red'}
 
         # The markers used for each alg', in the dist' case
-        self.markerOfMode = {'realCounter': 'v',
-                             'CEDAR': '<',
-                             'Morris': '>'}
+        self.markerOfMode = {'F2P'         : 'o',
+                              'realCounter': 'v',
+                             'CEDAR'       : '<',
+                             'Morris'      : '>'}
         self.points      = []
 
     def rdPcl(self):
@@ -76,14 +78,16 @@ class PclFileParser(object):
             if pointsOfThisMode == []:
                 print(f'No points found for mode {mode}')
                 continue
-            widths = [point['width'] for point in pointsOfThisMode]
-            Normalized_RMSE = [point['Normalized_RMSE'] for point in pointsOfThisMode]
-            ax.plot(widths, Normalized_RMSE,
-                    color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
-                    markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=f'{mode}', mfc='none')
-        plt.xlabel('Width')
-        plt.ylabel('Normalized_RMSE')
-        plt.title('Normalized_RMSE vs. Width')
+            numCntrs = [point['numCntrs'] for point in pointsOfThisMode]
+            y_lo = [point['Lo'] for point in pointsOfThisMode]
+            y_avg=[point['Avg'] for point in pointsOfThisMode]
+            y_hi = [point['Hi'] for point in pointsOfThisMode]
+            ax.plot ((numCntrs, numCntrs), (y_lo, y_hi), color=self.colorOfMode[mode])  # Plot the conf' interval line
+            ax.plot (numCntrs, y_avg, color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
+                     markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=mode, mfc='none')
+        plt.xlabel('numCntrs')
+        plt.ylabel('AvgRdError')
+        plt.title('AvgRdError vs. numCntrs')
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys(), fontsize=LEGEND_FONT_SIZE)

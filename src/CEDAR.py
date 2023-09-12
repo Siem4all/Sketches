@@ -30,7 +30,7 @@ class CEDARCntr(object):
         for i in range(1, self.estimator_size - 1):
             self.estimate_array[i] = self.estimate_array[i - 1] + self.array_diff[i - 1]  # D[i]=A[i+1]-A[i]
 
-    def incCntr(self, cntrIdx, factor):
+    def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
 
         This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max

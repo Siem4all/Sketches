@@ -1,12 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker
-import matplotlib.pylab as pylab
-import numpy as np, pandas as pd
-from pandas._libs.tslibs import period
-from printf import printf, printFigToPdf
 import pickle
-import settings
 
 MARKER_SIZE = 16
 MARKER_SIZE_SMALL = 1

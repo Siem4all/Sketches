@@ -1,19 +1,28 @@
-import math, random, os
-import numpy as np, scipy.stats as st, pandas as pd
-
+# Parameters and accessory functions
+# import math, random, os, pandas as pd
+import os, math, numpy as np, scipy.stats as st 
 from printf import printf
 # import commonFuncs 
 
-VERBOSE_COUT_CNTRLINE = 1
-VERBOSE_DEBUG = 2
-VERBOSE_RES = 3
-VERBOSE_PCL = 4
-VERBOSE_DETAILS = 5
-VERBOSE_NOTE = 6
-VERBOSE_LOG  = 7
-VERBOSE_DETAILED_LOG = 8
-
-Confs = [{'cntrSize' : 8,  'cntrMaxVal' :  1488888,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'expSize' : 3, 'tetraSize' : 1,'tetraMaxSize' : 1},
+VERBOSE_COUT_CNTRLINE   = 1 # print to stdout details about the concrete counter and its fields.
+VERBOSE_DEBUG           = 2 # perform checks and debug operations during the run.
+VERBOSE_RES             = 3 # print output to a .res file in the directory ../res
+VERBOSE_DETAILED_RES    = 4
+VERBOSE_PCL             = 5 # print output to a .pcl file in the directory ../res/pcl_files
+VERBOSE_DETAILS         = 6 # print to stdout details about the counter
+VERBOSE_NOTE            = 7 # print to stdout notes, e.g. when the target cntr value is above its max or below its min.
+VERBOSE_LOG             = 8
+VERBOSE_DETAILED_LOG    = 9
+VERBOSE_PROGRESS        = 10 # Print periodical output notifying the progress. Used to control long runs. 
+# Configurations to be run. 
+# For cntrSize<8, the conf' the values are unrealistically small, and used only for checks and debugging.
+# For cntrSize>=8, cntrMaxVal is calculated by that reached by F2P stat, and hyperSize is the corresponding hyper-exponent field size in F2P stat.
+# hyperMaxSize is 
+# expSize is the minimal needed for SEAD stat to reach the requested value.
+Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  100,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 6,  'cntrMaxVal' :  200,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 7,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 8,  'cntrMaxVal' :  1488888,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'expSize' : 3, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 9,  'cntrMaxVal' :  2994160,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
          {'cntrSize' : 10, 'cntrMaxVal' :  6004704,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
          {'cntrSize' : 11, 'cntrMaxVal' :  12025792, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
@@ -75,10 +84,25 @@ def sortcntrMaxVals ():
         else:
             printf (output_file, '{}\t{}\n' .format (item['mode'], item['maxVal']))            
 
-def error (str):
+
+def RmseOfVec (vec):
+    """
+    given a vector of errors, calculate the RMSE
+    """
+    return (math.sqrt (sum([item**2 for item in vec])/len(vec)))/len(vec)
+
+def error (str2print):
     """
     Print an error msg and exit.
     """
-    print (str)
+    print (f'Error: {str2print}')
     exit  ()
-    
+
+def check_if_input_file_exists (relative_path_to_input_file):
+    """
+    Check whether an input file, given by its relative path, exists.
+    If the file doesn't exist - exit with a proper error msg.
+    """
+    if not (os.path.isfile (relative_path_to_input_file)):
+        error (f'the input file {relative_path_to_input_file} does not exist')
+

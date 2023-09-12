@@ -16,7 +16,7 @@ class RealCntr(object):
         self.cntrMaxVec = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
         self.cntrMaxVal = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
 
-    def incCntr(self, cntrIdx, factor=1):
+    def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
 
         This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
