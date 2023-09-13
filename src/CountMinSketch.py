@@ -115,11 +115,11 @@ def main(counter_modes):
     to calculate Normalized_RMSE using Morris, real counter or CEDAR architecture.
     """
     remove_existing_files()
-    num_flows     =20
-    depth         = 2
+    num_flows     =100
+    depth         = 8
     for counter_mode in counter_modes:
-        for width in range(2, num_flows//2, 2):
-            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, cntrSize=8, cntrMaxVal=1000)
+        for width in range(2, num_flows//2, 11):
+            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, cntrSize=8, cntrMaxVal=10000)
             cmc.calculateNormalizedRMSE()
 
 if __name__ == '__main__':
