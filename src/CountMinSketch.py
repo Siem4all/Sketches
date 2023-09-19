@@ -96,18 +96,28 @@ class CountMinSketch:
         normRmseAvg          = np.average(Normalized_RMSE)
         normRmseConfInterval = settings.confInterval(ar=Normalized_RMSE, avg=normRmseAvg)
         # Write the results to a file and return them as a dictionary
-        simulation_results   = {
-        'mode':self.mode,
-        'numCntrs': self.numCntrs,
-        'Avg': normRmseAvg,
-        'Lo': normRmseConfInterval[0],
-        'Hi': normRmseConfInterval[1],
-
+        dict                 = {
+            'mode':self.mode,
+            'numCntrs': self.numCntrs,
+            'Avg': normRmseAvg,
+            'Lo': normRmseConfInterval[0],
+            'Hi': normRmseConfInterval[1]
         }
-        # Append the simulation results to the appropriate file
+        self.dumpDictToPcl(dict)
+        self.writeDictToResFile(dict)
+    def dumpDictToPcl (self, dict):
+        """
+        Dump a single dict of data into pclFile
+        """
         with open(f'../res/pcl_files/RdRmse.pcl', 'ab') as f:
-            pickle.dump(simulation_results, f)
+            pickle.dump(dict, f)
 
+    def writeDictToResFile (self, dict):
+        """
+        Write a single dict of data into resFile
+        """
+        resFile = open (f'../res/RdRmse.res', 'a+')
+        printf (resFile, f'{dict}\n\n')
 
 def main(counter_modes):
     """
@@ -115,11 +125,11 @@ def main(counter_modes):
     to calculate Normalized_RMSE using Morris, real counter or CEDAR architecture.
     """
     remove_existing_files()
-    num_flows     =100
+    num_flows     =50
     depth         = 8
     for counter_mode in counter_modes:
         for width in range(2, num_flows//2, 11):
-            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, cntrSize=8, cntrMaxVal=10000)
+            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, cntrSize=8, cntrMaxVal=5000)
             cmc.calculateNormalizedRMSE()
 
 if __name__ == '__main__':
