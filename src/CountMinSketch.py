@@ -18,7 +18,7 @@ def remove_existing_files():
         os.remove('../res/RdRMSE.res')
 
 class CountMinSketch:
-    def __init__(self, width, depth, num_flows, mode, cntrSize, cntrMaxVal):
+    def __init__(self, width, depth, num_flows, mode, conf, outPutFileName):
         """
         Parameters:
         - width (int): the number of counters per row.
@@ -32,11 +32,16 @@ class CountMinSketch:
         - The pair attribute is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
-        self.mode, self.counter_mode, self.cntrSize, self.cntrMaxVal=mode, mode, cntrSize, cntrMaxVal
+        self.mode=self.counter_mode=mode
         self.width, self.depth, self.num_flows = width, depth, num_flows
         self.numCntrs=self.width*self.depth
+        self.cntrSize=conf['cntrSize']
+        self.cntrMaxVal=conf['cntrMaxVal']
+        self.hyperSize=conf['hyperSize']
+        self.hyperMaxSize=conf['hyperMaxSize']
+        self.outPutFileName=outPutFileName
         if self.mode=='F2P':
-            self.counter_mode = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=2, hyperMaxSize=2, mode='F2P', numCntrs=self.numCntrs, verbose=[])
+            self.counter_mode = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=self.hyperSize, hyperMaxSize=self.hyperMaxSize, mode='F2P', numCntrs=self.numCntrs, verbose=[])
         elif self.mode=='Morris':
             self.counter_mode = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=10, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
         elif self.mode=='realCounter':
@@ -109,37 +114,38 @@ class CountMinSketch:
         """
         Dump a single dict of data into pclFile
         """
-        with open(f'../res/pcl_files/RdRmse.pcl', 'ab') as f:
+        with open(f'../res/pcl_files/{self.outPutFileName}.pcl', 'ab') as f:
             pickle.dump(dict, f)
 
     def writeDictToResFile (self, dict):
         """
         Write a single dict of data into resFile
         """
-        resFile = open (f'../res/RdRmse.res', 'a+')
+        resFile = open (f'../res/{self.outPutFileName}.res', 'a+')
         printf (resFile, f'{dict}\n\n')
 
-def main(counter_modes):
+def main():
     """
     It iterate the first for loop based on the list of counter types and tranfer the counter type as a mode to the CountMinSketch class
     to calculate Normalized_RMSE using Morris, real counter or CEDAR architecture.
     """
+    counter_modes = ['F2P','CEDAR', 'Morris','realCounter']
     remove_existing_files()
     num_flows     =50
     depth         = 8
-    for counter_mode in counter_modes:
-        for width in range(2, num_flows//2, 11):
-            cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, cntrSize=8, cntrMaxVal=5000)
-            cmc.calculateNormalizedRMSE()
+    for index in range(len(settings.Confs)):
+        for counter_mode in counter_modes:
+            for width in range(2, num_flows//2, 11):
+                cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=settings.Confs[index], outPutFileName=f'{index}RdNMSE')
+                cmc.calculateNormalizedRMSE()
+        # Create a PclFileParser object
+        parser = PclFileParser.PclFileParser()
+        # Read in data from a PCL file
+        parser.rdPcl(pclFileName=f'{index}RdNMSE')
+        # Generate a plot showing NRMSE versus width for each counter type in the counter_types list
+        parser.NRMSEVsWidthPlot(modes=counter_modes, pclFileName=f'{index}RdNMSE')
 
 if __name__ == '__main__':
-    # Define a list of counter types
-    counter_modes = ['F2P','CEDAR', 'Morris','realCounter']
     # Call the main function with the list of counter types as an argument
-    main(counter_modes)
-    # Create a PclFileParser object
-    parser = PclFileParser.PclFileParser()
-    # Read in data from a PCL file
-    parser.rdPcl()
-    # Generate a plot showing NRMSE versus width for each counter type in the counter_types list
-    parser.NRMSEVsWidthPlot(modes=counter_modes)
+    main()
+

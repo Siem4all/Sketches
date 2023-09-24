@@ -55,18 +55,19 @@ class PclFileParser(object):
                              'Morris'      : '>'}
         self.points      = []
 
-    def rdPcl(self):
+    def rdPcl(self, pclFileName):
         """
         Given a RdRmse.pcl, read all the data it contains into self.points
         """
-        pclFile = open('../res/pcl_files/RdRmse.pcl', 'rb')
+        pclFile = open('../res/pcl_files/{}.pcl' .format(pclFileName), 'rb')
+
         while True:
             try:
                 self.points.append(pickle.load(pclFile))
             except EOFError:
                 break
 
-    def NRMSEVsWidthPlot(self, modes):
+    def NRMSEVsWidthPlot(self, modes, pclFileName):
         """
         Generate a plot showing the Normalized_RMSE vs. width.
         """
@@ -91,5 +92,5 @@ class PclFileParser(object):
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys(), fontsize=LEGEND_FONT_SIZE)
-        plt.savefig('../res/RdRMSE.pdf', bbox_inches='tight')
+        plt.savefig('../res/{}.pdf'.format(pclFileName), bbox_inches='tight')
 
