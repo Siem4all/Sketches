@@ -20,19 +20,19 @@ class PclFileParser(object):
 
     # Set the parameters of the plot (sizes of fonts, legend, ticks etc.).
     # mfc='none' makes the markers empty.
-    setPltParams = lambda self, size='large': matplotlib.rcParams.update({'font.size': FONT_SIZE,
+    setPltParams = lambda self, size='large': matplotlib.rcParams.update({'font.size'      : FONT_SIZE,
                                                                           'legend.fontsize': LEGEND_FONT_SIZE,
                                                                           'xtick.labelsize': FONT_SIZE,
                                                                           'ytick.labelsize': FONT_SIZE,
-                                                                          'axes.labelsize': FONT_SIZE,
-                                                                          'axes.titlesize': FONT_SIZE, }) if (
+                                                                          'axes.labelsize' : FONT_SIZE,
+                                                                          'axes.titlesize' : FONT_SIZE, }) if (
             size == 'large') else matplotlib.rcParams.update({
-        'font.size': FONT_SIZE_SMALL,
+        'font.size'      : FONT_SIZE_SMALL,
         'legend.fontsize': LEGEND_FONT_SIZE_SMALL,
         'xtick.labelsize': FONT_SIZE_SMALL,
         'ytick.labelsize': FONT_SIZE_SMALL,
-        'axes.labelsize': FONT_SIZE_SMALL,
-        'axes.titlesize': FONT_SIZE_SMALL
+        'axes.labelsize' : FONT_SIZE_SMALL,
+        'axes.titlesize' : FONT_SIZE_SMALL
     })
 
     def __init__(self):

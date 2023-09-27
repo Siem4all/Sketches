@@ -12,17 +12,17 @@ class CEDARCntr(object):
          at the arrival of the same flow but the value of the shared estimator array is fixed so that i need to apply the count min sketch to the
          flow array and it the end, i will use the min value of the flow array as a pointer to the estimator.
         """
-        self.cntrSize = cntrSize
+        self.cntrSize       = cntrSize
         self.estimator_size = 2 ** cntrSize  # The estimator size is 2**q, where q is counter size
-        self.numCntrs = numCntrs  # number of counters in the flow array, which is width*depth
-        self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
-        self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
-        self.cntrMaxVec = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
+        self.numCntrs       = numCntrs  # number of counters in the flow array, which is width*depth
+        self.cntrZeroVec    = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
+        self.cntrs          = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
+        self.cntrMaxVec     = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
         self.calcCntrMaxVal = (1 << self.cntrSize)-1  # the max counter value which is 2**cntrSize
         self.estimate_array = np.zeros(self.estimator_size)  # Initialize the estimator array to zero
         self.estimate_array[self.estimator_size - 1] = cntrMaxVal
-        self.array_diff = np.zeros(self.estimator_size - 1)  # array of differences between estimators
-        self.delta = 0.1
+        self.array_diff    = np.zeros(self.estimator_size - 1)  # array of differences between estimators
+        self.delta         = 0.1
         self.array_diff[0] = 1 / (1 - (self.delta ** 2))  # set first difference
         for l in range(1, self.estimator_size - 1):
             self.array_diff[l] = 1 + 2 * (self.delta ** 2) * sum(

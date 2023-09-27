@@ -9,12 +9,12 @@ class RealCntr(object):
         As count min sketch is dimensional array with rows equals to number of depth and columns equals to number of width,
          i have converted it to row and column pair list.
         """
-        self.cntrSize = cntrSize
-        self.numCntrs = numCntrs  # number of counters in the flow array, which is width*depth
+        self.cntrSize    = cntrSize
+        self.numCntrs    = numCntrs  # number of counters in the flow array, which is width*depth
         self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
-        self.counters = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
-        self.cntrMaxVec = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
-        self.cntrMaxVal = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
+        self.counters    = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
+        self.cntrMaxVec  = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
+        self.cntrMaxVal  = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
 
     def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
