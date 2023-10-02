@@ -96,17 +96,17 @@ class CountMinSketch:
                 sumOfAllErors[expNum]+=((realCntr[flow] - self.incNQueryFlow(flow))/realCntr[flow])**2
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all experiments using the sumOfAllErors
         RMSE                 = [math.sqrt(sumOfAllErors[expNum]/numOfIncrements) for expNum in range(numOfExps)]
-        Normalized_RMSE      =  [RMSE[expNum]/numOfIncrements for expNum in range(numOfExps)]
+        Normalized_RMSE      = [RMSE[expNum]/numOfIncrements for expNum in range(numOfExps)]
         normRmseAvg          = np.average(Normalized_RMSE)
         normRmseConfInterval = settings.confInterval(ar=Normalized_RMSE, avg=normRmseAvg)
         # Write the results to a file and return them as a dictionary
         dict                 = {
-            'mode'    :self.mode,
-            'numCntrs': self.numCntrs,
-            'Avg'     : normRmseAvg,
-            'Lo'      : normRmseConfInterval[0],
-            'Hi'      : normRmseConfInterval[1]
-        }
+                                'mode'    :self.mode,
+                                'numCntrs': self.numCntrs,
+                                'Avg'     : normRmseAvg,
+                                'Lo'      : normRmseConfInterval[0],
+                                'Hi'      : normRmseConfInterval[1]
+                              }
         self.dumpDictToPcl(dict)      # this takes the dict dictionary as a parameter to dump it to .pcl file
         self.writeDictToResFile(dict) # this takes the dict dictionary as a parameter to print it to .res file
     def dumpDictToPcl (self, dict):
@@ -127,20 +127,20 @@ def main():
     """
     This iterates over different configurations, counter modes and widths with a fixed number of depth. the configuration which is a
      list of dictionaries, which found in the settings.py holds different conter sizes, counter max value, hyper sizes and so on.
-     The counter modes are specified as 'F2P', 'CEDAR', 'Morris', and 'realCounter'. The depth of the array counter is set to 4.
+     The counter modes are specified as 'F2P', 'CEDAR', 'Morris', and 'realCounter'. The depth of the array counter is set to 2.
      The counter sizes are specified as [8, 10, 12], and the widths are generated using the range function with a step size of 11.
      This initializes the count min sketch variables and calls the calculateNormalizedRMSE function
     """
     remove_existing_files()  # Remove existing files
-    counter_modes = ['F2P', 'CEDAR', 'Morris', 'realCounter']  # List of counter modes
-    num_flows     = 50  # Number of flows
-    depth         = 8  # Depth of the array counter
+    counter_modes = ['CEDAR', 'F2P', 'Morris', 'realCounter']  # List of counter modes
+    num_flows     = 100  # Number of flows
+    depth         = 2  # Depth of the array counter
     cntrSizes     = [8, 10, 12]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
             for counter_mode in counter_modes:
-                for width in range(2, num_flows//2, 11):
+                for width in range(2, num_flows//2, 10):
                     cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
                     cmc.calculateNormalizedRMSE()
             # Create a PclFileParser object

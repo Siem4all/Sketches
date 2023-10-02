@@ -12,25 +12,25 @@ class CEDARCntr(object):
          at the arrival of the same flow but the value of the shared estimator array is fixed so that i need to apply the count min sketch to the
          flow array and it the end, i will use the min value of the flow array as a pointer to the estimator.
         """
-        self.cntrSize       = cntrSize
+        self.cntrSize = cntrSize
         self.estimator_size = 2 ** cntrSize  # The estimator size is 2**q, where q is counter size
-        self.numCntrs       = numCntrs  # number of counters in the flow array, which is width*depth
-        self.cntrZeroVec    = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
-        self.cntrs          = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
-        self.cntrMaxVec     = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
-        self.calcCntrMaxVal = (1 << self.cntrSize)-1  # the max counter value which is 2**cntrSize
+        self.numCntrs = numCntrs  # number of counters in the flow array, which is width*depth
+        self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
+        self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
+        self.cntrMaxVec = '1' * self.cntrSize  # the max counter vector is '1111' or 2**cntrSize(4)=15
+        self.calcCntrMaxVal = (1 << self.cntrSize) - 1  # the max counter value which is 2**cntrSize
         self.estimate_array = np.zeros(self.estimator_size)  # Initialize the estimator array to zero
         self.estimate_array[self.estimator_size - 1] = cntrMaxVal
-        self.array_diff    = np.zeros(self.estimator_size - 1)  # array of differences between estimators
-        self.delta         = 0.1
-        self.array_diff[0] = 1 / (1 - (self.delta ** 2))  # set first difference
+        self.array_diff = np.zeros(self.estimator_size - 1)  # array of differences between estimators
+        self.delta = 0.01
+        self.array_diff[0] = 1  # set first difference
         for l in range(1, self.estimator_size - 1):
             self.array_diff[l] = 1 + 2 * (self.delta ** 2) * sum(
                 [self.array_diff[j] for j in range(l)])  # set remaining differences
         for i in range(1, self.estimator_size - 1):
             self.estimate_array[i] = self.estimate_array[i - 1] + self.array_diff[i - 1]  # D[i]=A[i+1]-A[i]
 
-    def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
+    def incCntr(self, cntrIdx, factor=1, mult=False, verbose=[]):
         """
 
         This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
@@ -49,6 +49,5 @@ class CEDARCntr(object):
          a pointer to the estimator array to get the value of the estimator array.
         """
         return self.estimate_array[int(self.cntrs[cntrIdx], 2)]
-
 
 

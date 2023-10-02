@@ -83,9 +83,10 @@ class PclFileParser(object):
             y_lo = [point['Lo'] for point in pointsOfThisMode]
             y_avg=[point['Avg'] for point in pointsOfThisMode]
             y_hi = [point['Hi'] for point in pointsOfThisMode]
-            ax.plot ((numCntrs, numCntrs), (y_lo, y_hi), color=self.colorOfMode[mode])  # Plot the conf' interval line
-            ax.plot (numCntrs, y_avg, color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
+            ax.plot((numCntrs, numCntrs), (y_lo, y_hi), color=self.colorOfMode[mode])  # Plot the conf' interval line
+            ax.plot(numCntrs, y_avg, color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
                      markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=mode, mfc='none')
+
         plt.xlabel('numCntrs')
         plt.ylabel('AvgRdError')
         plt.title('AvgRdError vs. numCntrs')
