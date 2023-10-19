@@ -1,53 +1,216 @@
+import random
 import numpy as np
 
+from printf import printf
+import settings
+# import commonFuncs 
 
-class CEDARCntr(object):
+# The 'delta' parameter determines CEDAR's accuracy.
+# Given a counter size and maximum value to count, the function findMinDeltaByMaxVal finds the minimal delta. using binary search.
+# To prevent overflows, the search range should be limited. 
+# This is done using the list of dicts below. 
+deltaSearchRanges = [
+                 {'cntrSize' : 5,    'deltaLo' : 0.0001,    'deltaHi' : 0.3},
+                 {'cntrSize' : 6,    'deltaLo' : 0.0001,    'deltaHi' : 0.3},
+                 {'cntrSize' : 7,    'deltaLo' : 0.0001,    'deltaHi' : 0.3},
+                 {'cntrSize' : 8,    'deltaLo' : 0.0001,    'deltaHi' : 0.3},
+                 {'cntrSize' : 9,    'deltaLo' : 0.0001,    'deltaHi' : 0.2},
+                 {'cntrSize' : 10,   'deltaLo' : 0.0001,    'deltaHi' : 0.2},
+                 {'cntrSize' : 11,   'deltaLo' : 0.0001,    'deltaHi' : 0.15},
+                 {'cntrSize' : 12,   'deltaLo' : 0.0001,    'deltaHi' : 0.13},
+                 {'cntrSize' : 13,   'deltaLo' : 0.0001,    'deltaHi' : 0.1},
+                 {'cntrSize' : 14,   'deltaLo' : 0.00001,   'deltaHi' : 0.1},
+                 {'cntrSize' : 15,   'deltaLo' : 0.00001,   'deltaHi' : 0.08},
+                 {'cntrSize' : 16,   'deltaLo' : 0.00001,   'deltaHi' : 0.07},
+                 ]
 
-    def __init__(self, cntrSize, numCntrs, cntrMaxVal):
+class CntrMaster(object):
+    """
+    Generate, check and parse counters
+    """
+    # Generates a string that details the counter's settings (param vals).
+    genSettingsStr = lambda self : 'Cedar_n{}_d{:.6f}'.format(self.cntrSize, self.delta)
+    
+    # This is the CEDAR formula to calculate the diff given the delta and the sum of the previous diffs
+    calc_diff = lambda self, sum_of_prev_diffs: (1 + 2 * self.delta ** 2 * sum_of_prev_diffs) / (1 - self.delta ** 2)
+
+    # print the details of the counter in a convenient way
+    printCntrLine = lambda self, cntrSize, delta, numCntrs, mantVal, cntrVal: print('cntrSize={}, delta={}' .format(cntrSize, delta))
+
+    cntr2num = lambda self, i: self.sharedEstimators[i]
+    
+    calcDiff = lambda self, estimator : (1 + 2*self.delta^2 * estimator) / (1 - self.delta^2)
+
+    def __init__(self, cntrSize, delta, numCntrs, verbose, cntrMaxVal):
         """
-        This counting mechanism separates the counter estimation into two arrays, namely flow and shared estimator array. Here, i have calculated
-        the values estimator array using delta and the array difference between estimators. at the beginning, i initialize the first and the last
-         estimator values (i.e. A[0] and A[L-1] to 0 and cntrMaxVal respectively). As my primary interest is to apply the CEDAR counter
-         to Count Min Sketch, i need to make any flow to point to estimated array number of hash function times. The flow array increments its value (pointer)
-         at the arrival of the same flow but the value of the shared estimator array is fixed so that i need to apply the count min sketch to the
-         flow array and it the end, i will use the min value of the flow array as a pointer to the estimator.
+        Initialize an array of cntrSize counters. The cntrs are initialized to 0.
+        Inputs:
+        cntrSize  - num of bits in each counter.
+        Delta - the max relative error. 
+        cntrMaxVal - requested max value to be reached by the counter. When Delta is not given, the initiator uses this value,
+                     and calculates (using binary search) the minimum delta that allows reaching this maximum value.
+        numCntrs - number of counters in the array.
         """
-        self.cntrSize = cntrSize
-        self.estimator_size = 2 ** cntrSize  # The estimator size is 2**q, where q is counter size
-        self.numCntrs = numCntrs  # number of counters in the flow array, which is width*depth
-        self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
-        self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
-        self.cntrMaxVec = '1' * self.cntrSize  # the max counter vector is '1111' or 2**cntrSize(4)=15
-        self.calcCntrMaxVal = (1 << self.cntrSize) - 1  # the max counter value which is 2**cntrSize
-        self.estimate_array = np.zeros(self.estimator_size)  # Initialize the estimator array to zero
-        self.estimate_array[self.estimator_size - 1] = cntrMaxVal
-        self.array_diff = np.zeros(self.estimator_size - 1)  # array of differences between estimators
-        self.delta = 0.01
-        self.array_diff[0] = 1  # set first difference
-        for l in range(1, self.estimator_size - 1):
-            self.array_diff[l] = 1 + 2 * (self.delta ** 2) * sum(
-                [self.array_diff[j] for j in range(l)])  # set remaining differences
-        for i in range(1, self.estimator_size - 1):
-            self.estimate_array[i] = self.estimate_array[i - 1] + self.array_diff[i - 1]  # D[i]=A[i+1]-A[i]
+        self.cntrSize      = cntrSize
+        self.numCntrs      = numCntrs
+        self.numEstimators = 2**self.cntrSize
+        self.verbose       = verbose
+        self.cntrs = [0 for i in range(self.numCntrs)]
+        if (delta==None):
+            if (cntrMaxVal==None):
+                print ('error: the input arguments should include either delta or cntrMaxVal')
+                exit ()
+            self.cntrMaxVal = cntrMaxVal
+            if (settings.VERBOSE_DETAILS in self.verbose):
+                self.detailFile = open ('../log/CEDAR_details.log', 'w')
+            self.findMinDeltaByMaxVal(targetMaxVal=self.cntrMaxVal)
+            if (settings.VERBOSE_DETAILS in self.verbose):
+                printf (self.detailFile, 'cntrSize={}, cntrMaxVal={}, found delta={}\n' .format (self.cntrSize, self.cntrMaxVal, self.delta))
+                for i in range(len(self.sharedEstimators)):
+                    printf (self.detailFile, 'sharedEstimator[{}]={:.4f}\n' .format(i, self.sharedEstimators[i]))
+                
+        else:
+            self.delta         = delta
+            self.calcDiffsNSharedEstimators ()
+        
+    def calcDiffsNSharedEstimators (self):
+        self.sharedEstimators = np.zeros (self.numEstimators)
+        self.diffs             = np.zeros (self.numEstimators-1) 
+        for i in range (1, 2**self.cntrSize):
+            self.diffs[i-1] = self.calc_diff(self.sharedEstimators[i-1])
+            self.sharedEstimators[i] = self.sharedEstimators[i-1] + self.diffs[i-1] 
+        self.cntrMaxVal = self.sharedEstimators[-1]
 
-    def incCntr(self, cntrIdx, factor=1, mult=False, verbose=[]):
+    def rstAllCntrs(self):
+        """
+        """
+        self.cntrs = [0 for i in range(self.numCntrs)]
+
+    def rstCntr (self, cntrIdx=0):
+        """
+        """
+        self.cntrs[cntrIdx] = 0
+        
+    def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
+        """
+        Increase a counter by a given factor.
+        Input:
+        cntrIdx - index of the cntr to increment, in the array of cntrs.
+        mult - if true, multiply the counter by factor. Else, increase the counter by factor.
+        factor - the additive/multiplicative coefficient.
+        verbose - determines which data will be written to the screen.
+        Output:
+        cntrDict: a dictionary representing the modified counter where: 
+            - cntrDict['cntrVec'] is the counter's binary representation; cntrDict['val'] is its value.
+        Operation:
+        Define cntrVal as the current counter's value. 
+        Then, targetValue = cntrVal*factor (if mult==True), and targetValue = cntrVal + factor (otherwise).  
+        If targetValue > maximum cntr's value, return the a cntr representing the max possible value. 
+        If targetValue < 0, return a cntr representing 0.
+        If targetValue can be represented correctly by the counter, return the exact representation.
+        Else, use probabilistic cntr's modification.
+        
+        If verbose==settings.VERBOSE_DETAILS, the function will print to stdout:
+        - the target value (the cntr's current value + factor)
+          - cntrDict['cntrVec'] - the binary counter.
+          - cntrDict['val']  - the counter's value.
+        """
+        settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='CEDAR')
+        for i in range(factor):
+            # The probability to increment is calculated  according to the diff
+            if (self.cntrs[cntrIdx] == self.numEstimators-1): # reached the largest estimator --> cannot further inc
+                if (settings.VERBOSE_NOTE in self.verbose):
+                    print ('note: tried to inc cntr {} above the maximal estimator value of {}' .format (cntrIdx, self.sharedEstimators[-1]))
+                break
+            probOfFurtherInc = 1/self.diffs[self.cntrs[cntrIdx]]
+            if random.random() < probOfFurtherInc:
+                if (settings.VERBOSE_DETAILS in verbose): 
+                    print ('oldVal={:.0f}, incedVal={:.0f}, probOfFurtherInc={:.6f}'
+                            .format (self.sharedEstimators[self.cntrs[cntrIdx]], self.sharedEstimators[self.cntrs[cntrIdx]+1], probOfFurtherInc))
+                self.cntrs[cntrIdx] += 1
+
+        return self.sharedEstimators[self.cntrs[cntrIdx]]
+
+    def queryCntr(self, cntrIdx=0) -> dict:
+        """
+        Query a cntr.
+        Input:
+        cntrIdx - the counter's index.
+        Output:
+        cntrDic: a dictionary, where:
+            - cntrDict['cntrVec'] is the counter's binary representation; cntrDict['val'] is its value.
+        """
+        settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='CEDAR')
+        return self.sharedEstimators[self.cntrs[cntrIdx]]
+
+    def findMinDeltaByMaxVal (self, targetMaxVal):
+        """
+        Given a target maximum countable value, return the minimal 'delta' parameter that reaches this value, 
+        for the current counter's size.
+        delta value determines the expected error: a higher delta implies a higher estimated error.
+        The min necessary delta is found through a binary search.
+        Inputs:   
+        * deltaLo - initial lower val for the binary search
+        * deltaHi - initial higher val for the binary search
+        * resolution = minimum difference (deltaHi-deltaLo); when reached - break the binary search.
         """
 
-        This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
-        value, i add 1 to the target value and save it as binary.
-        """
-        targetVal = int(self.cntrs[cntrIdx], 2)
-        if targetVal < self.calcCntrMaxVal:
-            self.cntrs[cntrIdx] = str(bin(targetVal + factor)[2:].zfill(self.cntrSize))
+        deltaSearchRange = [item for item in deltaSearchRanges if item['cntrSize']==self.cntrSize]
+        if len(deltaSearchRange)==0:
+            print ('Sorry, but the requested cntrSize {self.cntrSize} is currently not supported by CEDAR')
+            return
+        deltaLo, deltaHi = deltaSearchRange[0]['deltaLo'], deltaSearchRange[0]['deltaHi']
+        resolution = deltaLo
 
-        return self.estimate_array[int(self.cntrs[cntrIdx], 2)]
+        # check first the extreme cases
+        self.delta = deltaHi
+        self.calcDiffsNSharedEstimators ()
+        if (self.cntrMaxVal < targetMaxVal):
+            print ('cannot reach maxVal={} even with highest delta, deltaHi={}. Skipping binary search' .format (targetMaxVal, deltaHi))
+            return
 
-    def queryCntr(self, cntrIdx):
-        """
+        while (True):
+            if (deltaHi - deltaLo < resolution): # converged. Still, need to check whether this delta is high enough.
+                self.calcDiffsNSharedEstimators ()
+                if (self.cntrMaxVal >= targetMaxVal): # can reach maxVal with this delta --> Good
+                    return
+                # now we know that cannot reach targetMaxVal with the current delta
+                self.delta += resolution
+                self.calcDiffsNSharedEstimators ()
+                if (self.cntrMaxVal < targetMaxVal): 
+                    print ('problem at binary search')
+                    exit ()
+                return
+                
+            self.delta = (deltaLo + deltaHi)/2
+            if (settings.VERBOSE_DETAILS in self.verbose):
+                printf (self.detailFile, 'delta={}\n' .format (self.delta))
+            self.calcDiffsNSharedEstimators ()
+            if (self.cntrMaxVal==targetMaxVal): # found exact match 
+                break
+            if (self.cntrMaxVal < targetMaxVal): # can't reach maxVal with this delta --> need larger delta value
+                deltaLo = self.delta
+            else: # maxVal > targetMaxVal --> reached the maximum value - try to decrease delta, to find a tighter value.
+                deltaHi = self.delta
+        settings.error (self.delta) #$$$
+        return self.delta             
 
-        Here i used the variable flowIdx to get the binary number from cntr list, i converted it to number in order to use it as
-         a pointer to the estimator array to get the value of the estimator array.
-        """
-        return self.estimate_array[int(self.cntrs[cntrIdx], 2)]
 
+def printAllVals(cntrSize, delta, cntrMaxVal, verbose):
+    """
+    Loop over all the binary combinations of the given counter size.
+    For each combination, print to file the respective counter, and its value.
+    The prints are sorted in an increasing order of values.
+    """
+    listOfVals = []
+    myCntrMaster = CntrMaster(cntrSize=cntrSize, delta=delta, cntrMaxVal=cntrMaxVal, numCntrs=1)
+    for num in range(2 ** cntrSize):
+        val = myCntrMaster.cntr2num(num)
+        listOfVals.append ({'cntrVec' : np.binary_repr(num, cntrSize), 'val' : val})
+
+
+    if settings.VERBOSE_RES in verbose:
+        outputFile = open('../res/{}.res'.format(myCntrMaster.genSettingsStr()), 'w')
+        for item in listOfVals:
+            printf(outputFile, '{}={:.1f}\n'.format(item['cntrVec'], item['val']))
 

@@ -36,26 +36,6 @@ Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  100,      'hyperSize' : 1, 'hyperMaxS
 # https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
 confInterval = lambda ar, avg, conf_lvl=0.99 : st.t.interval (conf_lvl, len(ar)-1, loc=avg, scale=st.sem(ar)) if np.std(ar)>0 else [avg, avg]
    
-def getConfByCntrSize (cntrSize):
-    """
-    given the counter's size, return the configuration with that counter size.
-    If the number of configurations with that counter's size, exit with a proper error message.
-    """
-    listOfConfs = [item for item in Confs if item['cntrSize']==cntrSize]
-    if (len(listOfConfs)<1): 
-        error ('Sorry. No known configuration for cntrSize={}' .format (self.cntrSize))
-    elif (len(listOfConfs)>1):
-        error ('Sorry. Too many known configurations for cntrSize={}' .format (self.cntrSize))
-    return listOfConfs[0]
-   
-def getCntrMaxValByCntrSize (cntrSize):
-    """
-    given the counter's size, return the counter's max size of the (single) configuration with that counter size.
-    If the number of configurations with that counter's size, exit with a proper error message.
-    """
-    return getConfByCntrSize (cntrSize)['cntrMaxVal']
-   
-   
 def idxOfLeftmostZero (ar, maxIdx):
     """
     if the index of the leftmost 0 in the array >= maxIdx, return maxIdx.

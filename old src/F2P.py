@@ -347,7 +347,7 @@ class CntrMaster(object):
         """
         settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType=self.mode)
 
-        return self.cntr2num(self.cntrs[cntrIdx])
+        return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
 
     def incCntrBy1(self, cntrIdx):
         """
@@ -378,7 +378,7 @@ class CntrMaster(object):
             self.cntrs[cntrIdx] = self.mantNexpVals2cntr(mantVal=0, expVal=expVal + 1)
         return int(cntrppVal)
 
-    def incCntr(self, cntrIdx, factor, mult, verbose):
+    def incCntr(self, cntrIdx, mult=False, factor=1, verbose=[]):
         """
         Increase a counter by a given factor.
         Input:
@@ -623,4 +623,6 @@ def printAllCntrMaxVals(mode='F3P', hyperSizeRange=None, hyperMaxSizeRange=None,
         print('Sorry, mode {} is not supported yet'.format(mode))
 
 
-
+if __name__ == '__main__':
+    v = CntrMaster(cntrSize=8, hyperSize=2, hyperMaxSize=2, mode='F2P', numCntrs=20, verbose=[])
+    print(v.incCntr(0))
