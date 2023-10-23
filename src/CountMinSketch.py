@@ -30,7 +30,7 @@ class CountMinSketch:
         # Access the values within the conf dictionary using keys
         self.cntrSize       =conf['cntrSize']
         self.cntrMaxVal     =conf['cntrMaxVal']
-        self.hyperSize      =1
+        self.hyperSize      =conf['hyperSize']
         self.hyperMaxSize   =conf['hyperMaxSize']
         self.outPutFileName =outPutFileName
         self.verbose        =[5, 8]
