@@ -9,21 +9,17 @@ class RealCntr(object):
         As count min sketch is dimensional array with rows equals to number of depth and columns equals to number of width,
          i have converted it to row and column pair list.
         """
-        self.cntrSize    = cntrSize
         self.numCntrs    = numCntrs  # number of counters in the flow array, which is width*depth
-        self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
-        self.cntrs    = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
-        self.cntrMaxVec  = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
-        self.cntrMaxVal  = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
+        self.cntrs    = [0 for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
 
     def rstAllCntrs(self):
         """
         """
-        self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]
+        self.cntrs = [0 for i in range(self.numCntrs)]
     def rstCntr (self, cntrIdx=0):
         """
         """
-        self.cntrs[cntrIdx] = self.cntrZeroVec
+        self.cntrs[cntrIdx] = 0
 
     def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
@@ -31,19 +27,15 @@ class RealCntr(object):
         This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
         value, it added 1 to the target value and save it as binary.
         """
-        targetVal = int(self.cntrs[cntrIdx], 2)
-        if targetVal < self.cntrMaxVal:
-            self.cntrs[cntrIdx] = str(bin(targetVal + factor)[2:].zfill(self.cntrSize))
-        else:
-            self.cntrs[cntrIdx] = self.cntrMaxVec
-        return int(self.cntrs[cntrIdx], 2)
+        self.cntrs[cntrIdx] += factor
+        return self.cntrs[cntrIdx]
 
     def queryCntr(self, cntrIdx):
         """
 
         Here i used the variable flowIdx to get the binary number from counters list, and converted it to number
         """
-        return int(self.cntrs[cntrIdx], 2)
+        return self.cntrs[cntrIdx]
 
 
 

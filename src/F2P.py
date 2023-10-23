@@ -2,7 +2,7 @@
 # import time, random, sys, os
 # from   pathlib import Path
 # from builtins import True False
-import math, random, pickle
+import math, random, pickle, mmh3
 from printf import printf
 import settings
 import numpy as np
@@ -47,7 +47,7 @@ class CntrMaster(object):
 
     # Returns the maximum value that may be represented by this cntr. 
     calcCntrMaxVal = lambda self: self.calcCntrMaxValF2P() if (self.mode == 'F2P') else self.calcCntrMaxValF3P()
-
+    # Given the cntr's integer value, returns the value it represents
     # # Returns the maximum value of the counter with its current params 
     # cntrMaxVal          = lambda self : self.cntrMaxVal
     #
@@ -198,6 +198,7 @@ class CntrMaster(object):
         self.numCntrs = numCntrs
         self.mode = mode
         self.verbose = verbose
+        self.cntrMaxVal  = 1 << self.cntrSize - 1  # the max counter value which is 2**cntrSize
         if (self.mode == 'F2P'):
             if (not (self.setHyperSizeF2P(hyperSize))):
                 self.isFeasible = False
@@ -216,7 +217,7 @@ class CntrMaster(object):
         self.calcCntrMaxVal()
         self.rstAllCntrs()
         self.probOfInc1 = np.ones(2 ** self.cntrSize)
-
+        self.pair           = [(i, j) for i in range(2) for j in range(4)]
     def rstAllCntrs(self):
         """
         """
@@ -551,7 +552,19 @@ class CntrMaster(object):
             if (cntrMaxValByFormula != cntrMaxValByCntr):
                 print('error: cntrMaxValByFormula={}, cntrMaxValByCnt={}'.format(cntrMaxValByFormula, cntrMaxValByCntr))
                 exit()
+    def incFlow(self, flow):
+        # increment the mapped counters values
+        for seed in range(2):
+                counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % 4))
+                self.incCntr(cntrIdx=counterIndex, factor=int(1), mult=False, verbose=[])
 
+    def queryFlow(self, flow):
+        # Query the minimum Morris, CEDAR, real counter value for the given flow by hashing and finding the minimum value among the appropriate counters
+        minNum = math.inf
+        for seed in range(2):
+            counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % 4))
+            minNum       = min(self.queryCntr(counterIndex), minNum)
+        return minNum
 
 def printAllVals(cntrSize=8, hyperSize=2, hyperMaxSize=2, mode='F3P', verbose=[]):
     """
@@ -621,6 +634,16 @@ def printAllCntrMaxVals(mode='F3P', hyperSizeRange=None, hyperMaxSizeRange=None,
                            '{} cntrMaxVal={}\n'.format(myCntrMaster.genSettingsStr(), myCntrMaster.cntrMaxVal))
     else:
         print('Sorry, mode {} is not supported yet'.format(mode))
+
+if __name__ == '__main__':
+    f2p=CntrMaster(cntrSize=8, hyperSize=1, hyperMaxSize=3, mode='F2P', numCntrs=8, verbose=[])
+    rel=[0]*101
+    for _ in range(10000):
+        flow=random.randint(1, 100)
+        f2p.incFlow(flow)
+        rel[flow]+=1
+        print(rel[flow], f2p.queryFlow(flow))
+
 
 
 

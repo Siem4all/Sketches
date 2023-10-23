@@ -25,24 +25,24 @@ class CountMinSketch:
         pair: a tuple of row and column indices used to compute the corresponding counter index. It is used to compute the index of each counter. Instead of adding row with column which gives us wrong mapping, i have
         paired the depth number with the hash value and i have inserted them to the pair list to use the index of the pair as a counter index.
          """
-        self.mode=self.counter_mode=mode
-        self.width, self.depth, self.num_flows = width, depth, num_flows
-        self.numCntrs      =self.width*self.depth
+        self.mode, self.width, self.depth, self.num_flows = mode, width, depth, num_flows
+        self.numCntrs        =self.width*self.depth
         # Access the values within the conf dictionary using keys
-        self.cntrSize      =conf['cntrSize']
-        self.cntrMaxVal    =conf['cntrMaxVal']
-        self.hyperSize     =conf['hyperSize']
-        self.hyperMaxSize  =conf['hyperMaxSize']
-        self.outPutFileName=outPutFileName
-        self.pair          = [(i, j) for i in range(depth) for j in range(width)]
+        self.cntrSize       =conf['cntrSize']
+        self.cntrMaxVal     =conf['cntrMaxVal']
+        self.hyperSize      =1
+        self.hyperMaxSize   =conf['hyperMaxSize']
+        self.outPutFileName =outPutFileName
+        self.verbose        =[5, 8]
+        self.pair           = [(i, j) for i in range(depth) for j in range(width)]
         if self.mode=='F2P':
-            self.counter_mode = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=self.hyperSize, hyperMaxSize=self.hyperMaxSize, mode='F2P', numCntrs=self.numCntrs, verbose=[])
+            self.countersArray = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=self.hyperSize, hyperMaxSize=self.hyperMaxSize, mode='F2P', numCntrs=self.numCntrs, verbose=[])
         elif self.mode=='Morris':
-            self.counter_mode = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
+            self.countersArray = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
         elif self.mode=='realCounter':
-             self.counter_mode=RealCntr(cntrSize=self.cntrSize, numCntrs=self.numCntrs)
+             self.countersArray=RealCntr(cntrSize=self.cntrSize, numCntrs=self.numCntrs)
         elif self.mode=='CEDAR':
-            self.counter_mode = CEDAR.CntrMaster(cntrSize=self.cntrSize, delta=None, numCntrs=self.numCntrs, verbose=[], cntrMaxVal=self.cntrMaxVal)  # Initialize the CEDAR counter
+            self.countersArray = CEDAR.CntrMaster(cntrSize=self.cntrSize, delta=None, numCntrs=self.numCntrs, verbose=[], cntrMaxVal=self.cntrMaxVal)  # Initialize the CEDAR counter
         else:
             print(f'Sorry, the mode {self.mode} that you requested is not supported')
 
@@ -54,21 +54,21 @@ class CountMinSketch:
         cntrValAfterInc = [0]*self.depth
         for mappedCntr in range(self.depth):
             counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
-            cntrValAfterInc[mappedCntr]=self.counter_mode.incCntr(cntrIdx=counterIndex, factor=1, mult=False, verbose=[])
+            cntrValAfterInc[mappedCntr]=self.countersArray.incCntr(cntrIdx=counterIndex, factor=1, mult=False, verbose=[])
         return min(cntrValAfterInc)
 
     def incFlow(self, flow):
         # increment the mapped counters values
         for seed in range(self.depth):
                 counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % self.width))
-                self.counter_mode.incCntr(cntrIdx=counterIndex, factor=int(1), mult=False, verbose=[])
+                self.countersArray.incCntr(cntrIdx=counterIndex, factor=int(1), mult=False, verbose=[])
 
     def queryFlow(self, flow):
         # Query the minimum Morris, CEDAR, real counter value for the given flow by hashing and finding the minimum value among the appropriate counters
         minNum = math.inf
         for seed in range(self.depth):
             counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % self.width))
-            minNum = min(self.counter_mode.queryCntr(counterIndex), minNum)
+            minNum       = min(self.countersArray.queryCntr(counterIndex), minNum)
         return minNum
 
     def calculateNormalizedRMSE(self):
@@ -81,23 +81,26 @@ class CountMinSketch:
         numOfIncrements  = 10000
         numOfExps        =50
         sumOfAllErors    = [0] * numOfExps
-        numOfPoints = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
+        numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
         for expNum in range(numOfExps):
-            realCntr    = np.zeros(self.num_flows)
-            sampleProb  = 1
-            self.counter_mode.rstAllCntrs()  # To reset the value of all counters
+            realCntr      = np.zeros(self.num_flows)
+            sampleProb   = 1
+            self.countersArray.rstAllCntrs()  # To reset the value of all counters
             # Increment the counters randomly and update the real values
             for incNum in range(numOfIncrements):
                 flow                 = np.random.randint(self.num_flows)
                 if self.queryFlow(flow) < self.cntrMaxVal:
                     # Choose a random flow to increment
                     realCntr[flow] += 1  # increment the real counter value of the flow upon its arrival
-                    if random.random() < sampleProb:
+                    if sampleProb==1 and random.random() < sampleProb:
                         sumOfAllErors[expNum]    +=((realCntr[flow] - self.incNQueryFlow(flow))/realCntr[flow])**2
                         numOfPoints[expNum]      += 1
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all experiments using the sumOfAllErors
         RMSE                 = [math.sqrt(sumOfAllErors[expNum]/numOfPoints[expNum]) for expNum in range(numOfExps)]
         Normalized_RMSE      = [RMSE[expNum]/numOfPoints[expNum] for expNum in range(numOfExps)]
+        log_file = open(f'../res/log_files/{self.outPutFileName}.log', 'w')
+        if (settings.VERBOSE_LOG in self.verbose):
+            printf (log_file, 'Normalized_RMSE=\n{0}\n,mode={1} '.format(Normalized_RMSE, self.mode))
         normRmseAvg          = np.average(Normalized_RMSE)
         normRmseConfInterval = settings.confInterval(ar=Normalized_RMSE, avg=normRmseAvg)
         # Write the results to a file and return them as a dictionary

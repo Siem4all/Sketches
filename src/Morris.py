@@ -45,7 +45,7 @@ class CntrMaster (object):
     cntrInt2num = lambda self, cntrInt : int(1) if (cntrInt==1) else self.a *( (1+1/self.a)**cntrInt - 1)
 
     # return the maximum value representable by a counter of this size and 'a' parameter
-    calcCntrMaxVal  = lambda self : self.cntrInt2num ((1 << self.cntrSize)-1)
+    calcCntrMaxVal  = lambda self : self.cntrInt2num((1 << self.cntrSize)-1)
 
     # Given the cntr's vector, returns the it represents value
     cntr2num = lambda self, cntr : self.cntrInt2num (int (cntr, base=2))
