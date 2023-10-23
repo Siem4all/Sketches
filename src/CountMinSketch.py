@@ -78,7 +78,7 @@ class CountMinSketch:
         It calculates the Read Root Mean Square Error (RMSE), Normalized RMSE, normalized RMSE average with its confidence interval
         for different counter modes.At the end, it writes or prints the output to res and pcl files as a dictionary.
         """
-        numOfIncrements  = 10000
+        numOfIncrements  = 1000
         numOfExps        =50
         sumOfAllErors    = [0] * numOfExps
         numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
@@ -138,13 +138,13 @@ def main():
     remove_existing_files()  # Remove existing files
     counter_modes = ['CEDAR', 'F2P', 'Morris', 'realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
-    depth         = 8  # Depth of the array counter
-    cntrSizes     = [8, 10, 12]  # Counter sizes
+    depth         = 2  # Depth of the array counter
+    cntrSizes     = [5]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
             for counter_mode in counter_modes:
-                for width in range(10, num_flows//2, 10):
+                for width in range(2,num_flows//2, 10):
                     cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
                     cmc.calculateNormalizedRMSE()
             # Create a PclFileParser object
