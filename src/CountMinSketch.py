@@ -138,8 +138,8 @@ def main():
     remove_existing_files()  # Remove existing files
     counter_modes = ['CEDAR', 'F2P', 'Morris', 'realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
-    depth         = 2  # Depth of the array counter
-    cntrSizes     = [5]  # Counter sizes
+    depth         = 2 # Depth of the array counter
+    cntrSizes     = [7]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
