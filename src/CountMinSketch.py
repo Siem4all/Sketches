@@ -100,7 +100,7 @@ class CountMinSketch:
         Normalized_RMSE      = [RMSE[expNum]/numOfPoints[expNum] for expNum in range(numOfExps)]
         log_file = open(f'../res/log_files/{self.outPutFileName}.log', 'w')
         if (settings.VERBOSE_LOG in self.verbose):
-            printf (log_file, 'Normalized_RMSE=\n{0}\n,mode={1} '.format(Normalized_RMSE, self.mode))
+            printf (log_file, 'Normalized_RMSE=\n{0}\n'.format(Normalized_RMSE))
         normRmseAvg          = np.average(Normalized_RMSE)
         normRmseConfInterval = settings.confInterval(ar=Normalized_RMSE, avg=normRmseAvg)
         # Write the results to a file and return them as a dictionary
@@ -136,10 +136,10 @@ def main():
      This initializes the count min sketch variables and calls the calculateNormalizedRMSE function
     """
     remove_existing_files()  # Remove existing files
-    counter_modes = ['CEDAR', 'F2P', 'Morris', 'realCounter']  # List of counter modes
+    counter_modes = ['F2P', 'CEDAR', 'Morris','realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
-    cntrSizes     = [7]  # Counter sizes
+    cntrSizes     = [6, 8, 10, 11, 12, 13, 14, 16]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:

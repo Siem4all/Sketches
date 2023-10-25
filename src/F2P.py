@@ -636,7 +636,7 @@ def printAllCntrMaxVals(mode='F3P', hyperSizeRange=None, hyperMaxSizeRange=None,
         print('Sorry, mode {} is not supported yet'.format(mode))
 
 if __name__ == '__main__':
-    f2p=CntrMaster(cntrSize=8, hyperSize=1, hyperMaxSize=3, mode='F2P', numCntrs=8, verbose=[])
+    f2p=CntrMaster(cntrSize=8, hyperSize=2, hyperMaxSize=2, mode='F2P', numCntrs=8, verbose=[])
     rel=[0]*101
     for _ in range(10000):
         flow=random.randint(1, 100)
