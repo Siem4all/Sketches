@@ -38,17 +38,17 @@ class CntrMaster (object):
                                                                                                .format (expVec, expVal, mantVec, mantVal, self.offsetOfExpVal[expVal], cntrVal))    
     # increment a binary vector, regardless the partition to mantissa, exponent etc.
     # E.g., given a binary vec "00111", this func' will return "01000"  
-    incBinVec = lambda self, vec, delta=1 : np.binary_repr (int(vec, base=2)+delta, len(vec)) 
+    incBinVec      = lambda self, vec, delta=1 : np.binary_repr (int(vec, base=2)+delta, len(vec))
 
     
     # Given the cntr's integer value, returns the value it represents 
-    cntrInt2num = lambda self, cntrInt : int(1) if (cntrInt==1) else self.a *( (1+1/self.a)**cntrInt - 1)
+    cntrInt2num    = lambda self, cntrInt : int(1) if (cntrInt==1) else self.a *( (1+1/self.a)**cntrInt - 1)
 
     # return the maximum value representable by a counter of this size and 'a' parameter
-    calcCntrMaxVal  = lambda self : self.cntrInt2num((1 << self.cntrSize)-1)
+    calcCntrMaxVal = lambda self : self.cntrInt2num ((1 << self.cntrSize)-1)
 
     # Given the cntr's vector, returns the it represents value
-    cntr2num = lambda self, cntr : self.cntrInt2num (int (cntr, base=2))
+    cntr2num       = lambda self, cntr : self.cntrInt2num (int (cntr, base=2))
 
     # Generates a strings that details the counter's settings (param vals).    
     genSettingsStr = lambda self : 'Morris_n{}_a{:.2f}' .format (self.cntrSize, self.a)
@@ -173,16 +173,16 @@ class CntrMaster (object):
         self.cntrZero    = 0
         self.cntrMaxVal  = self.calcCntrMaxVal () #self.cntrInt2num (2**self.cntrSize-1)        
         self.num2cntrNormFactor = 1 / math.log (1 + 1/self.a)
+        
+    def rstCntr (self, cntrIdx=0):
+        """
+        """
+        self.cntrs[cntrIdx] = self.cntrZeroVec
 
     def rstAllCntrs(self):
         """
         """
         self.cntrs = [self.cntrZeroVec for i in range (self.numCntrs)]
-
-    def rstCntr (self, cntrIdx=0):
-        """
-        """
-        self.cntrs[cntrIdx] = self.cntrZeroVec
 
     def queryCntr (self, cntrIdx=0):
         """
@@ -194,7 +194,7 @@ class CntrMaster (object):
             - cntrDict['cntrVec'] is the counter's binary representation; cntrDict['val'] is its value.        
         """
         settings.checkCntrIdx (cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='Morris')
-        return self.cntr2num(self.cntrs[cntrIdx])
+        return {'cntrVec' : self.cntrs[cntrIdx], 'val' : self.cntr2num(self.cntrs[cntrIdx])}    
         
     def incCntr (self, cntrIdx=0, factor=1, verbose=[], mult=False):
         """
@@ -237,7 +237,7 @@ class CntrMaster (object):
         else:
             probOfFurtherInc = float (targetVal - optionalModifiedCntr[0]['val']) / float (optionalModifiedCntr[1]['val'] - optionalModifiedCntr[0]['val'])
             self.cntrs[cntrIdx] = optionalModifiedCntr[1]['cntrVec'] if (random.random() < probOfFurtherInc) else optionalModifiedCntr[0]['cntrVec']
-        return self.cntr2num(self.cntrs[cntrIdx])
+        return {'cntrVec' : self.cntrs[cntrIdx], 'val' : self.cntr2num(self.cntrs[cntrIdx])}    
     
 def printAllVals (cntrSize=4, a=10, verbose=[]):
     """

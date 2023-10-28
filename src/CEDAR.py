@@ -41,7 +41,7 @@ class CntrMaster(object):
     
     calcDiff = lambda self, estimator : (1 + 2*self.delta^2 * estimator) / (1 - self.delta^2)
 
-    def __init__(self, cntrSize, delta, numCntrs, verbose, cntrMaxVal):
+    def __init__(self, cntrSize=8, delta=None, numCntrs=1, verbose=[], cntrMaxVal=None):
         """
         Initialize an array of cntrSize counters. The cntrs are initialized to 0.
         Inputs:
@@ -81,16 +81,16 @@ class CntrMaster(object):
             self.sharedEstimators[i] = self.sharedEstimators[i-1] + self.diffs[i-1] 
         self.cntrMaxVal = self.sharedEstimators[-1]
 
+    
+    def rstCntr (self, cntrIdx=0):
+        """
+        """
+        self.cntrs[cntrIdx] = 0
     def rstAllCntrs(self):
         """
         """
         self.cntrs = [0 for i in range(self.numCntrs)]
 
-    def rstCntr (self, cntrIdx=0):
-        """
-        """
-        self.cntrs[cntrIdx] = 0
-        
     def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
         Increase a counter by a given factor.
@@ -129,7 +129,7 @@ class CntrMaster(object):
                             .format (self.sharedEstimators[self.cntrs[cntrIdx]], self.sharedEstimators[self.cntrs[cntrIdx]+1], probOfFurtherInc))
                 self.cntrs[cntrIdx] += 1
 
-        return self.sharedEstimators[self.cntrs[cntrIdx]]
+        return {'cntrVec': np.binary_repr(self.cntrs[cntrIdx], self.cntrSize), 'val': self.sharedEstimators[self.cntrs[cntrIdx]]}
 
     def queryCntr(self, cntrIdx=0) -> dict:
         """
@@ -141,7 +141,7 @@ class CntrMaster(object):
             - cntrDict['cntrVec'] is the counter's binary representation; cntrDict['val'] is its value.
         """
         settings.checkCntrIdx(cntrIdx=cntrIdx, numCntrs=self.numCntrs, cntrType='CEDAR')
-        return self.sharedEstimators[self.cntrs[cntrIdx]]
+        return {'cntrVec': np.binary_repr(self.cntrs[cntrIdx], self.cntrSize), 'val': self.sharedEstimators[self.cntrs[cntrIdx]]}
 
     def findMinDeltaByMaxVal (self, targetMaxVal):
         """
@@ -196,7 +196,7 @@ class CntrMaster(object):
         return self.delta             
 
 
-def printAllVals(cntrSize, delta, cntrMaxVal, verbose):
+def printAllVals(cntrSize=8, delta=None, cntrMaxVal=None, verbose=[]):
     """
     Loop over all the binary combinations of the given counter size.
     For each combination, print to file the respective counter, and its value.

@@ -19,18 +19,18 @@ VERBOSE_PROGRESS        = 10 # Print periodical output notifying the progress. U
 # For cntrSize>=8, cntrMaxVal is calculated by that reached by F2P stat, and hyperSize is the corresponding hyper-exponent field size in F2P stat.
 # hyperMaxSize is 
 # expSize is the minimal needed for SEAD stat to reach the requested value.
-Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  100,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 6,  'cntrMaxVal' :  200,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 7,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'expSize' : 1, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 8,  'cntrMaxVal' :  1488888,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'expSize' : 3, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 9,  'cntrMaxVal' :  2994160,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 10, 'cntrMaxVal' :  6004704,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 11, 'cntrMaxVal' :  12025792, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 12, 'cntrMaxVal' :  24067968, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 13, 'cntrMaxVal' :  48152320, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 14, 'cntrMaxVal' :  96321024, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 15, 'cntrMaxVal' : 192658432, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4},
-         {'cntrSize' : 16, 'cntrMaxVal' : 385333248, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'expSize' : 4}]
+Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  100,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 6,  'cntrMaxVal' :  200,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 7,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 8,  'cntrMaxVal' :  1488888,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'f2pExpSize' : 3, 'seadExpSize' : 5, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 9,  'cntrMaxVal' :  2994160,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 10, 'cntrMaxVal' :  6004704,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 11, 'cntrMaxVal' :  12025792, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 12, 'cntrMaxVal' :  24067968, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 13, 'cntrMaxVal' :  48152320, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 14, 'cntrMaxVal' :  96321024, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 15, 'cntrMaxVal' : 192658432, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
+         {'cntrSize' : 16, 'cntrMaxVal' : 385333248, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5}]
 
 # Calculate the confidence interval of an array of values ar, given its avg. Based on 
 # https://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
@@ -126,3 +126,8 @@ def check_if_input_file_exists (relative_path_to_input_file):
     if not (os.path.isfile (relative_path_to_input_file)):
         error (f'the input file {relative_path_to_input_file} does not exist')
 
+def getMachineStr ():
+    if (os.getcwd().find ('itamarc')>-1): # the string 'HPC' appears in the path only in HPC runs
+        return 'HPC' # indicates that this sim runs on my PC
+    else:
+        return 'PC' # indicates that this sim runs on an HPC       

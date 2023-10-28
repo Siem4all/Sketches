@@ -1,9 +1,9 @@
 import math, random, os, pickle, mmh3
 import PclFileParser, settings
-import Morris, F2P, CEDAR
+import Morris, F2P, CEDAR, RealCntr
 import numpy as np
-from RealCounter import RealCntr
 from printf import printf
+from datetime import datetime
 
 def remove_existing_files():
     # Removes the specified files if they exist.
@@ -40,7 +40,7 @@ class CountMinSketch:
         elif self.mode=='Morris':
             self.countersArray = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
         elif self.mode=='realCounter':
-             self.countersArray=RealCntr(cntrSize=self.cntrSize, numCntrs=self.numCntrs)
+             self.countersArray=RealCntr.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs)
         elif self.mode=='CEDAR':
             self.countersArray = CEDAR.CntrMaster(cntrSize=self.cntrSize, delta=None, numCntrs=self.numCntrs, verbose=[], cntrMaxVal=self.cntrMaxVal)  # Initialize the CEDAR counter
         else:
@@ -54,21 +54,22 @@ class CountMinSketch:
         cntrValAfterInc = [0]*self.depth
         for mappedCntr in range(self.depth):
             counterIndex               = self.pair.index((mappedCntr, mmh3.hash(str(flow), seed=mappedCntr) % self.width))
-            cntrValAfterInc[mappedCntr]=self.countersArray.incCntr(cntrIdx=counterIndex, factor=1, mult=False, verbose=[])
+            cntrValAfterInc[mappedCntr]=self.countersArray.incCntr(cntrIdx=counterIndex, factor=1, mult=False, verbose=[])['val']
         return min(cntrValAfterInc)
 
     def incFlow(self, flow):
         # increment the mapped counters values
         for seed in range(self.depth):
                 counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % self.width))
-                self.countersArray.incCntr(cntrIdx=counterIndex, factor=int(1), mult=False, verbose=[])
+                self.countersArray.incCntr(cntrIdx=counterIndex, factor=int(1), mult=False, verbose=[])['val']
 
     def queryFlow(self, flow):
         # Query the minimum Morris, CEDAR, real counter value for the given flow by hashing and finding the minimum value among the appropriate counters
         minNum = math.inf
         for seed in range(self.depth):
             counterIndex = self.pair.index((seed,mmh3.hash(str(flow), seed) % self.width))
-            minNum       = min(self.countersArray.queryCntr(counterIndex), minNum)
+            self.countersArray.queryCntr(counterIndex)
+            minNum       = min(self.countersArray.queryCntr(counterIndex)['val'], minNum)
         return minNum
 
     def calculateNormalizedRMSE(self):
@@ -84,8 +85,10 @@ class CountMinSketch:
         numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
         for expNum in range(numOfExps):
             realCntr      = np.zeros(self.num_flows)
-            sampleProb   = 1
+            sampleProb    = 1
             self.countersArray.rstAllCntrs()  # To reset the value of all counters
+            print('Started running experiment {} at t={}. mode={}, cntrSize={}, cntrMaxVal={}' .format (
+                     expNum, datetime.now().strftime("%H:%M:%S"), self.mode, self.cntrSize, self.cntrMaxVal))
             # Increment the counters randomly and update the real values
             for incNum in range(numOfIncrements):
                 flow                 = np.random.randint(self.num_flows)
@@ -139,7 +142,7 @@ def main():
     counter_modes = ['F2P', 'CEDAR', 'Morris','realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
-    cntrSizes     = [6, 8, 10, 11, 12, 13, 14, 16]  # Counter sizes
+    cntrSizes     = [16]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
@@ -157,4 +160,3 @@ def main():
 if __name__ == '__main__':
     # Call the main function
     main()
-

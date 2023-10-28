@@ -12,19 +12,21 @@ import settings, F2P, SEAD, CEDAR, Morris, TetraStatic, TetraDynamic
 from datetime import datetime
 
 def main ():
-    simController = SimController (verbose = []) #settings.VERBOSE_RES, settings.VERBOSE_PCL],)
+    simController = SimController (verbose = [settings.VERBOSE_RES, settings.VERBOSE_PCL]) #settings.VERBOSE_RES, settings.VERBOSE_PCL],)
     simController.runSingleCntr \
         (dwnSmple       = False,  
          # modes          = ['F2P', 'Morris', 'CEDAR', 'SEAD stat', 'SEAD dyn'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
          # modes          = ['F2P'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
          # modes          = ['F3P'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
         # modes          = ['Morris', 'CEDAR', 'F2P'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
-        modes          = ['CEDAR'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
-         # modes          = ['SEAD stat'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
-         # modes          = ['SEAD dyn'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
-         cntrSize       = 14, 
-         numOfExps      = 1,
-         erTypes        = ['RdRmse'], # The error modes to gather during the simulation. Options are: 'WrEr', 'WrRmse', 'RdEr', 'RdRmse' 
+        # modes          = ['Morris'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
+        # modes          = ['CEDAR'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
+        # modes          = ['F2P'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
+        modes          = ['SEAD stat'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
+        # modes          = ['SEAD dyn'], #'['Tetra stat', 'F2P', 'SEAD stat', 'SEAD dyn', 'CEDAR', 'Morris'] 
+         cntrSize       = 16, 
+         numOfExps      = 50,
+         erTypes        = ['WrRmse'], # The error modes to gather during the simulation. Options are: 'WrEr', 'WrRmse', 'RdEr', 'RdRmse' 
          cntrMaxVal     = None, 
          )
 
@@ -41,10 +43,10 @@ class SimController (object):
             print ('Note: verbose does not include .pcl')  
         
         pwdStr = os.getcwd()
-        if pwdStr.find ('ofanan'):
-            self.machineStr  = 'PC' # indicates that this sim runs on my PC
+        if (pwdStr.find ('itamarc')>-1): # the string 'HPC' appears in the path only in HPC runs
+            self.machineStr  = 'HPC' # indicates that this sim runs on my PC
         else:
-            self.machineStr  = 'HPC' # indicates that this sim runs on an HPC       
+            self.machineStr  = 'PC' # indicates that this sim runs on an HPC       
         # generate directories for the output files if not exist
         if not (os.path.exists('../res')):
             os.makedirs ('../res')
@@ -77,7 +79,6 @@ class SimController (object):
         self.erType                  = 'wrEr'
         self.cntrRecord[self.erType] = [0] * self.numOfExps
         self.numOfPoints             = [0] * self.numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j. The number of points varies, as it depends upon the random process of increasing the approximated cntr. 
-        self.maxRealVal              = self.cntrMaxVal if (self.maxRealVal==None) else self.maxRealVal
         for expNum in range(self.numOfExps):
             realValCntr = 0 # will cnt the real values (the accurate value)
             cntrVal     = 0 # will cnt the counter's value
@@ -153,7 +154,6 @@ class SimController (object):
         
         self.cntrRecord['sumSqEr']  = [0] * self.numOfExps # self.cntrRecord['sumSqEr'][j] will hold the sum of the square errors collected at experiment j. 
         self.numOfPoints            = [0] * self.numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j. The number of points varies, as it depends upon the random process of increasing the approximated cntr. 
-        self.maxRealVal = self.cntrMaxVal if (self.maxRealVal==None) else self.maxRealVal 
         for expNum in range(self.numOfExps):
             realValCntr = 0 # will cnt the real values (the accurate value)
             cntrVal     = 0 # will cnt the counter's value
@@ -180,7 +180,7 @@ class SimController (object):
                         if (settings.VERBOSE_DETAILS in self.verbose): 
                             print ('smplProb={}' .format (self.cntrRecord['sampleProb'])) 
                     else:
-                        if cntrAfterInc['val']==self.cntrRecord['cntr'].cntrMaxVal: # the cntr reached its maximum values and no dwon-sample is used --> finish this experiment
+                        if cntrAfterInc['val']==self.cntrRecord['cntr'].cntrMaxVal: # the cntr reached its maximum values and no down-sample is used --> finish this experiment
                             break  
  
         dict = self.calcRmseStat ()
@@ -198,7 +198,6 @@ class SimController (object):
         """
     
         self.cntrRecord['sumSqEr'] = [0] * self.numOfExps # self.cntrRecord['sumSqEr'][j] will hold the sum of the square errors collected at experiment j. 
-        self.maxRealVal = self.cntrMaxVal if (self.maxRealVal==None) else self.maxRealVal 
         self.numOfPoints           = [self.maxRealVal] * self.numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j. The number of points varies, as it depends upon the random process of increasing the approximated cntr. 
     
         for expNum in range(self.numOfExps):
@@ -242,7 +241,6 @@ class SimController (object):
     
         self.cntrRecord['RdEr'] = [0] * self.numOfExps
         self.numOfPoints        = [self.maxRealVal] * self.numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j. The number of points varies, as it depends upon the random process of increasing the approximated cntr. 
-        self.maxRealVal         = self.cntrMaxVal if (self.maxRealVal==None) else self.maxRealVal 
     
         for expNum in range(self.numOfExps):
             realValCntr = 0 # will cnt the real values (the accurate value)
@@ -316,21 +314,15 @@ class SimController (object):
         about the absolute/relative error) to a .res file.
         """        
         if (self.cntrMaxVal==None):
-            listOfConfs = [item for item in settings.Confs if item['cntrSize']==self.cntrSize]
-            if (len(listOfConfs)<1): 
-                settings.error ('Sorry. No known configuration for cntrSize={}' .format (self.cntrSize))
-            elif (len(listOfConfs)>1):
-                settings.error ('Sorry. Too many known configurations for cntrSize={}' .format (self.cntrSize))
-            conf = listOfConfs[0]
+            conf = settings.getConfByCntrSize (cntrSize=self.cntrSize)
             self.cntrMaxVal   = conf['cntrMaxVal'] 
             self.hyperSize    = conf['hyperSize'] 
             self.hyperMaxSize = conf['hyperMaxSize'] 
-            self.expSize      = conf['expSize']
                     
         # Set self.cntrRecord, which holds the counter to run
         if (self.mode=='F2P'):
+            self.expSize      = conf['f2pExpSize']
             self.cntrRecord = {'mode' : 'F2P', 'cntr' : F2P.CntrMaster(mode='F2P', cntrSize=self.cntrSize, hyperSize=self.hyperSize, verbose=self.verbose)}
-            self.cntrRecord['cntr'].calcProbOfInc1F2P ()
         elif (self.mode=='F3P'):
             if (self.cntrMaxVal==None):
                 self.hyperMaxSize=conf['hyperMaxSize']
@@ -340,8 +332,7 @@ class SimController (object):
             self.cntrRecord = {'mode' : 'F3P', 'cntr' : F2P.CntrMaster(mode='F3P', cntrSize=self.cntrSize, hyperMaxSize=self.hyperMaxSize)}
 
         elif (self.mode=='SEAD stat'):
-            if (self.expSize==None):
-                settings.error ('To simulate SEAD Stat, you must specify expSize')
+            self.expSize      = conf['seadExpSize']
             self.cntrRecord = {'mode' : self.mode, 'cntr' : SEAD.CntrMaster(mode='static', cntrSize=self.cntrSize, expSize=self.expSize)}
         elif (self.mode=='SEAD dyn'):
             self.cntrRecord = {'mode' : self.mode, 'cntr' : SEAD.CntrMaster(mode='dynamic', cntrSize=self.cntrSize)}
@@ -356,13 +347,17 @@ class SimController (object):
         else:
             settings.error ('mode {} that you chose is not supported' .format (self.mode))
 
+        self.maxRealVal         = self.cntrMaxVal if (self.maxRealVal==None) else self.maxRealVal
+        if self.cntrRecord['cntr'].cntrMaxVal < self.maxRealVal and (not(self.dwnSmple)):
+            settings.error ('This counter can reach max val={} which is smaller than the requested maxRealVal {}, and no dwn smpling was used' .format (self.cntrRecord['cntr'].cntrMaxVal, self.maxRealVal))
+
         # open output files
         outputFileStr = '1cntr_{}{}' .format (self.machineStr, '_w_dwnSmpl' if self.dwnSmple else '')
         if (settings.VERBOSE_RES in self.verbose):
             self.resFile = open (f'../res/{outputFileStr}.res', 'a+')
             
         print ('Started running runSingleCntr at t={}. mode={}, cntrSize={}, maxRealVal={}, cntrMaxVal={}' .format (
-                datetime.now().strftime("%H:%M:%S"), self.mode, self.cntrSize, self.maxRealVal, self.cntrMaxVal))
+                datetime.now().strftime("%H:%M:%S"), self.mode, self.cntrSize, self.maxRealVal, self.cntrRecord['cntr'].cntrMaxVal))
         
         # run the simulation          
         for self.erType in self.erTypes:
