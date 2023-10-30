@@ -79,7 +79,6 @@ class CountMinSketch:
         It calculates the Read Root Mean Square Error (RMSE), Normalized RMSE, normalized RMSE average with its confidence interval
         for different counter modes.At the end, it writes or prints the output to res and pcl files as a dictionary.
         """
-        numOfIncrements  = 1000
         numOfExps        =50
         sumOfAllErors    = [0] * numOfExps
         numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
@@ -90,7 +89,7 @@ class CountMinSketch:
             print('Started running experiment {} at t={}. mode={}, cntrSize={}, cntrMaxVal={}' .format (
                      expNum, datetime.now().strftime("%H:%M:%S"), self.mode, self.cntrSize, self.cntrMaxVal))
             # Increment the counters randomly and update the real values
-            for incNum in range(numOfIncrements):
+            for incNum in range(self.cntrMaxVal): # numOfIncrements is equal with conf['cntrMaxVal']
                 flow                 = np.random.randint(self.num_flows)
                 if self.queryFlow(flow) < self.cntrMaxVal:
                     # Choose a random flow to increment
@@ -142,14 +141,11 @@ def main():
     counter_modes = ['F2P', 'CEDAR', 'Morris','realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
-    cntrSizes     = [16]  # Counter sizes
+    cntrSizes     = [8]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
-            for counter_mode in counter_modes:
-                for width in range(2,num_flows//2, 10):
-                    cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
-                    cmc.calculateNormalizedRMSE()
+
             # Create a PclFileParser object
             parser = PclFileParser.PclFileParser()
             # Read in data from a PCL file
