@@ -1,9 +1,10 @@
 import numpy as np
 
 
-class CntrMaster(object):
+class CntrMaster (object):
 
-    cntr2num = lambda self, cntrVec: int(cntrVec, 2)
+    # Lambda expression to convert counter to number
+    cntr2num = lambda self, cntr: int(cntr, 2)
 
     def __init__(self, cntrSize, numCntrs):
         """
@@ -15,27 +16,34 @@ class CntrMaster(object):
         self.numCntrs    = numCntrs  # number of counters in the flow array, which is width*depth
         self.cntrZeroVec = '0' * self.cntrSize  # Initialize all the counter to 0, Eg. '0000'
         self.cntrs       = [self.cntrZeroVec for i in range(self.numCntrs)]  # repeat the zero counter number of counter times
+        self.cntrMaxVec  = '1' * self.cntrSize # the max counter vector is '1111' or 2**cntrSize(4)=15
+        self.cntrMaxVal  = (1 << self.cntrSize) - 1  # the max counter value which is 2**cntrSize
 
-    def rstAllCntrs(self):
+    def rstAllCntrs (self):
         """
         """
         self.cntrs = [self.cntrZeroVec for i in range(self.numCntrs)]
 
     def incCntr(self, cntrIdx=0, factor=1, mult=False, verbose=[]):
         """
-        This converts the counter binary value to integer and increment the value by factor. Return the binary and integer value
-        as dictionary.
+
+        This converts the counter binary value to integer and check if that value can increment or reaches its max value. If it not reaches max
+        value, it added 1 to the target value and save it as binary.
         """
-        self.cntrs[cntrIdx] = str(bin(int(self.cntrs[cntrIdx], 2) + factor)[2:])
-        return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
+        targetVal = int(self.cntrs[cntrIdx], 2)
+        if targetVal < self.cntrMaxVal:
+            self.cntrs[cntrIdx] = str(bin(targetVal + factor)[2:].zfill(self.cntrSize))
+        else:
+            self.cntrs[cntrIdx] = self.cntrMaxVec
+
+        return {'cntrVec' : self.cntrs[cntrIdx], 'val' : self.cntr2num(self.cntrs[cntrIdx])}
 
     def queryCntr(self, cntrIdx):
         """
 
         Here i used the variable flowIdx to get the binary number from counters list, and converted it to number
         """
-        return {'cntrVec': self.cntrs[cntrIdx], 'val': self.cntr2num(self.cntrs[cntrIdx])}
-
+        return {'cntrVec' : self.cntrs[cntrIdx], 'val' : self.cntr2num(self.cntrs[cntrIdx])}
 
 
 

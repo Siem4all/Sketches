@@ -19,9 +19,9 @@ VERBOSE_PROGRESS        = 10 # Print periodical output notifying the progress. U
 # For cntrSize>=8, cntrMaxVal is calculated by that reached by F2P stat, and hyperSize is the corresponding hyper-exponent field size in F2P stat.
 # hyperMaxSize is 
 # expSize is the minimal needed for SEAD stat to reach the requested value.
-Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  100,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 6,  'cntrMaxVal' :  200,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 7,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 6,  'cntrMaxVal' :  500,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 7,  'cntrMaxVal' :  700,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 8,  'cntrMaxVal' :  1488888,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'f2pExpSize' : 3, 'seadExpSize' : 5, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 9,  'cntrMaxVal' :  2994160,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
          {'cntrSize' : 10, 'cntrMaxVal' :  6004704,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},

@@ -155,7 +155,7 @@ class CntrMaster (object):
         self.calcOffsets ()
         return True
    
-    def __init__ (self, cntrSize=8, hyperSize=1, hyperMaxSize=None, mode='F2P', numCntrs=1, verbose=[]):
+    def __init__ (self, cntrSize, hyperSize, hyperMaxSize, mode, numCntrs, verbose):
         
         """
         Initialize an array of cntrSize counters at the given mode. The cntrs are initialized to 0.
@@ -352,7 +352,7 @@ class CntrMaster (object):
             self.cntrs[cntrIdx] = self.mantNexpVals2cntr (mantVal=0, expVal=expVal+1)
         return {'cntrVec' : self.cntrs[cntrIdx], 'val' : cntrppVal} 
         
-    def incCntr (self, cntrIdx=0, mult=False, factor=1, verbose=[]):
+    def incCntr (self, cntrIdx, mult, factor, verbose):
         """
         Increase a counter by a given factor.
         Input:
@@ -497,7 +497,7 @@ class CntrMaster (object):
                 print ('error: cntrMaxValByFormula={}, cntrMaxValByCnt={}' .format (cntrMaxValByFormula, self.cntrMaxVal))
                 exit ()
 
-    def calcCntrMaxValF2P (self):
+    def calcCntrMaxValF2P(self):
         """
         sets self.cntrMaxVal to the maximum value that may be represented by this F2P cntr. 
         """

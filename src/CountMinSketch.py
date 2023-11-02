@@ -141,10 +141,14 @@ def main():
     counter_modes = ['F2P', 'CEDAR', 'Morris','realCounter']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
-    cntrSizes     = [8]  # Counter sizes
+    cntrSizes     = [5, 6, 7]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
+            for counter_mode in counter_modes:
+                for width in range(2, num_flows//2, 20):
+                    cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
+                    cmc.calculateNormalizedRMSE()
 
             # Create a PclFileParser object
             parser = PclFileParser.PclFileParser()
