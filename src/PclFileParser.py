@@ -44,13 +44,13 @@ class PclFileParser(object):
 
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'F2P'         : 'green',
-                             'realCounter': 'blue',
+                             'RealCntr': 'blue',
                             'CEDAR'       : 'brown',
                             'Morris'      : 'red'}
 
         # The markers used for each alg', in the dist' case
         self.markerOfMode = {'F2P'         : 'o',
-                              'realCounter': 'v',
+                              'RealCntr': 'v',
                              'CEDAR'       : '<',
                              'Morris'      : '>'}
         self.points      = []
@@ -86,12 +86,13 @@ class PclFileParser(object):
             ax.plot((numCntrs, numCntrs), (y_lo, y_hi), color=self.colorOfMode[mode])  # Plot the conf' interval line
             ax.plot(numCntrs, y_avg, color=self.colorOfMode[mode], marker=self.markerOfMode[mode],
                      markersize=MARKER_SIZE, linewidth=LINE_WIDTH, label=mode, mfc='none')
+            ax.set_xticks(numCntrs)
 
         plt.xlabel('numCntrs')
         plt.ylabel('AvgRdError')
         plt.title('AvgRdError vs. numCntrs')
+        # Set the exact values on the x-axis
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys(), fontsize=LEGEND_FONT_SIZE)
         plt.savefig('../res/{}.pdf'.format(pclFileName), bbox_inches='tight')
-

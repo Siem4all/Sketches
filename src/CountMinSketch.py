@@ -39,8 +39,8 @@ class CountMinSketch:
             self.countersArray = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=self.hyperSize, hyperMaxSize=self.hyperMaxSize, mode='F2P', numCntrs=self.numCntrs, verbose=[])
         elif self.mode=='Morris':
             self.countersArray = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
-        elif self.mode=='realCounter':
-             self.countersArray=RealCntr.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs)
+        elif self.mode=='RealCntr':
+             self.countersArray=RealCntr.CntrMaster(numCntrs=self.numCntrs)
         elif self.mode=='CEDAR':
             self.countersArray = CEDAR.CntrMaster(cntrSize=self.cntrSize, delta=None, numCntrs=self.numCntrs, verbose=[], cntrMaxVal=self.cntrMaxVal)  # Initialize the CEDAR counter
         else:
@@ -83,7 +83,7 @@ class CountMinSketch:
         sumOfAllErors    = [0] * numOfExps
         numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
         for expNum in range(numOfExps):
-            realCntr      = np.zeros(self.num_flows)
+            exactFlowCntr      = np.zeros(self.num_flows)
             sampleProb    = 1
             self.countersArray.rstAllCntrs()  # To reset the value of all counters
             print('Started running experiment {} at t={}. mode={}, cntrSize={}, cntrMaxVal={}' .format (
@@ -93,9 +93,9 @@ class CountMinSketch:
                 flow                 = np.random.randint(self.num_flows)
                 if self.queryFlow(flow) < self.cntrMaxVal:
                     # Choose a random flow to increment
-                    realCntr[flow] += 1  # increment the real counter value of the flow upon its arrival
+                    exactFlowCntr[flow] += 1  # increment the real counter value of the flow upon its arrival
                     if sampleProb==1 and random.random() < sampleProb:
-                        sumOfAllErors[expNum]    +=((realCntr[flow] - self.incNQueryFlow(flow))/realCntr[flow])**2
+                        sumOfAllErors[expNum]    +=((exactFlowCntr[flow] - self.incNQueryFlow(flow))/exactFlowCntr[flow])**2
                         numOfPoints[expNum]      += 1
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all experiments using the sumOfAllErors
         RMSE                 = [math.sqrt(sumOfAllErors[expNum]/numOfPoints[expNum]) for expNum in range(numOfExps)]
@@ -138,7 +138,7 @@ def main():
      This initializes the count min sketch variables and calls the calculateNormalizedRMSE function
     """
     remove_existing_files()  # Remove existing files
-    counter_modes = ['F2P', 'CEDAR', 'Morris','realCounter']  # List of counter modes
+    counter_modes = ['F2P', 'CEDAR', 'Morris','RealCntr']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
     cntrSizes     = [5, 6, 7]  # Counter sizes
@@ -146,7 +146,7 @@ def main():
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
             for counter_mode in counter_modes:
-                for width in range(2, num_flows//2, 20):
+                for width in [2, 8, 32]:
                     cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
                     cmc.calculateNormalizedRMSE()
 
