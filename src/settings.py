@@ -22,7 +22,7 @@ VERBOSE_PROGRESS        = 10 # Print periodical output notifying the progress. U
 Confs = [{'cntrSize' : 5,  'cntrMaxVal' :  300,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 6,  'cntrMaxVal' :  500,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 7,  'cntrMaxVal' :  700,      'hyperSize' : 1, 'hyperMaxSize' : 1, 'f2pExpSize' : 1, 'seadExpSize' : 2, 'tetraSize' : 1,'tetraMaxSize' : 1},
-         {'cntrSize' : 8,  'cntrMaxVal' :  10000,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'f2pExpSize' : 3, 'seadExpSize' : 5, 'tetraSize' : 1,'tetraMaxSize' : 1},
+         {'cntrSize' : 8,  'cntrMaxVal' :  100000,  'hyperSize' : 2, 'hyperMaxSize' : 2, 'f2pExpSize' : 3, 'seadExpSize' : 5, 'tetraSize' : 1,'tetraMaxSize' : 1},
          {'cntrSize' : 9,  'cntrMaxVal' :  2994160,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
          {'cntrSize' : 10, 'cntrMaxVal' :  6004704,  'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},
          {'cntrSize' : 11, 'cntrMaxVal' :  12025792, 'hyperSize' : 2, 'hyperMaxSize' : 3, 'f2pExpSize' : 4, 'seadExpSize' : 5},

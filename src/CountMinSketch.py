@@ -141,7 +141,7 @@ def main():
     counter_modes = ['F2P', 'CEDAR', 'Morris','RealCntr']  # List of counter modes
     num_flows     = 100  # Number of flows
     depth         = 2 # Depth of the array counter
-    cntrSizes     = [5, 6, 7]  # Counter sizes
+    cntrSizes     = [8]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
