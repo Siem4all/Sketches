@@ -46,7 +46,7 @@ colorOfMode = {'F2P'         : 'green',
                              'RealCntr': 'blue',
                             'CEDAR'       : 'brown',
                             'Morris'      : 'red',
-                            'SEAD stat'    : 'Purple'}
+                            'SEAD stat'    : 'black'}
 
 markerOfMode = {'F2P'         : 'o',
                               'RealCntr': 'v',
