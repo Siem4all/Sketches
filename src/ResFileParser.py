@@ -1,6 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.ticker
+import matplotlib.ticker, cms
 import pickle
 
 MARKER_SIZE            = 16
@@ -37,37 +37,33 @@ class ResFileParser(object):
 
     def __init__(self):
         """
-        Initialize a res_file_parser, used to parse result files, and generate plots.
+        Initialize a pcl_file_parser, used to parse result files, and generate plots.
         """
         # List of algorithms' names, used in the plots' legend, for the dist' case
         self.labelOfMode = {}
 
         # The colors used for each alg's plot, in the dist' case
         self.colorOfMode = {'F2P'         : 'green',
-                             'RealCntr'   : 'blue',
+                             'RealCntr': 'blue',
                             'CEDAR'       : 'brown',
-                            'Morris'      : 'red'}
+                            'Morris'      : 'red',
+                            'SEAD stat'    : 'Purple'}
 
         # The markers used for each alg', in the dist' case
         self.markerOfMode = {'F2P'         : 'o',
-                              'RealCntr'   : 'v',
+                              'RealCntr': 'v',
                              'CEDAR'       : '<',
-                             'Morris'      : '>'}
+                             'Morris'      : '>',
+                             'SEAD stat'    : '*'}
         self.points      = []
 
-    def rdRes(self, resFileName):
+    def rdRes(self):
         """
-        Given a RdRmse.res, read all the data it contains into self.points
+        Given a RdRmse.res, read all the data itcontains into self.points
         """
-        resFile = open('../res/{}.res'.format(resFileName), 'rb')
-
-        while True:
-            try:
-                self.points.append(pickle.load(resFile))
-            except EOFError:
-                break
-
-    def NRMSEVsWidthPlot(self, modes, resFileName):
+        for index in range(len(cms.data)):
+            self.points=cms.data[index]
+    def NRMSEVsWidthPlot(self, modes):
         """
         Generate a plot showing the Normalized_RMSE vs. width.
         """
@@ -91,7 +87,17 @@ class ResFileParser(object):
         plt.xlabel('numCntrs')
         plt.ylabel('AvgRdError')
         plt.title('AvgRdError vs. numCntrs')
+        # Set the exact values on the x-axis
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))
         plt.legend(by_label.values(), by_label.keys(), fontsize=LEGEND_FONT_SIZE)
-        plt.savefig('../res/{}.pdf'.format(resFileName), bbox_inches='tight')
+        plt.show()
+
+
+if __name__ == '__main__':
+    counter_modes = ['SEAD stat', 'F2P', 'CEDAR', 'Morris', 'RealCntr']
+    parser = ResFileParser()
+    # Read in data from a PCL file
+    parser.rdRes()
+    # Generate a plot showing normRmseAvg versus number of counter for each counter modes.
+    parser.NRMSEVsWidthPlot(modes=counter_modes)

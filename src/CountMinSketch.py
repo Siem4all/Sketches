@@ -1,6 +1,6 @@
 import math, random, os, pickle, mmh3
 import PclFileParser, settings
-import Morris, F2P, CEDAR, RealCntr
+import Morris, F2P, CEDAR, RealCntr, SEAD
 import numpy as np
 from printf import printf
 from datetime import datetime
@@ -39,6 +39,11 @@ class CountMinSketch:
             self.countersArray = F2P.CntrMaster(cntrSize=self.cntrSize, hyperSize=self.hyperSize, hyperMaxSize=self.hyperMaxSize, mode='F2P', numCntrs=self.numCntrs, verbose=[])
         elif self.mode=='Morris':
             self.countersArray = Morris.CntrMaster(cntrSize=self.cntrSize, numCntrs=self.numCntrs, a=None, cntrMaxVal=self.cntrMaxVal,verbose=[], estimateAGivenCntrSize=False)
+        elif (self.mode == 'SEAD stat'):
+            self.expSize = conf['seadExpSize']
+            self.countersArray = SEAD.CntrMaster(cntrSize=self.cntrSize,  expSize=self.expSize, mode='static',  numCntrs=self.numCntrs, verbose=[])
+        elif (self.mode == 'SEAD dyn'):
+            self.countersArray = SEAD.CntrMaster(cntrSize=self.cntrSize,  expSize=self.expSize, mode='dynamic',  numCntrs=self.numCntrs, verbose=[])
         elif self.mode=='RealCntr':
              self.countersArray=RealCntr.CntrMaster(numCntrs=self.numCntrs)
         elif self.mode=='CEDAR':
@@ -79,7 +84,7 @@ class CountMinSketch:
         It calculates the Read Root Mean Square Error (RMSE), Normalized RMSE, normalized RMSE average with its confidence interval
         for different counter modes.At the end, it writes or prints the output to res and pcl files as a dictionary.
         """
-        numOfExps        =50
+        numOfExps        =1
         sumOfAllErors    = [0] * numOfExps
         numOfPoints      = [0] * numOfExps # self.numOfPoints[j] will hold the number of points collected for statistic at experiment j.
         for expNum in range(numOfExps):
@@ -102,9 +107,7 @@ class CountMinSketch:
                         if (settings.VERBOSE_DETAILS in self.verbose):
                             print ('mode= {}, expNum= {}, flow= {}, exactFlowVal={:.0f}, cntrOldVal={:.0f}, cntrNewVal={:.0f}, cntrMaxVal={:.0f}'
                                    .format (self.mode, expNum, flow, exactFlowCntr[flow], cntrVal, self.queryFlow(flow), self.cntrMaxVal))
-                else:
-                    if self.queryFlow(flow)==self.cntrMaxVal:
-                        break
+
         # Compute the Root Mean Square Error (RMSE) and Normalized RMSE over all experiments using the sumOfAllErors
         RMSE                 = [math.sqrt(sumOfAllErors[expNum]/numOfPoints[expNum]) for expNum in range(numOfExps)]
         Normalized_RMSE      = [RMSE[expNum]/numOfPoints[expNum] for expNum in range(numOfExps)]
@@ -146,15 +149,15 @@ def main():
      This initializes the count min sketch variables and calls the calculateNormalizedRMSE function
     """
     remove_existing_files()  # Remove existing files
-    counter_modes = ['F2P', 'CEDAR', 'Morris','RealCntr']  # List of counter modes
+    counter_modes = ['SEAD stat', 'F2P', 'CEDAR', 'Morris', 'RealCntr']  # List of counter modes
     num_flows     = 100  # Number of flows
-    depth         = 4 # Depth of the array counter
-    cntrSizes     = [8]  # Counter sizes
+    depth         = 2 # Depth of the array counter
+    cntrSizes     = [16]  # Counter sizes
     for conf in settings.Confs: # Iterate over each dictionary in settings.Confs list
         # Check if the 'cntrSize' the conf dictionary is in the specified counter sizes
         if conf['cntrSize'] in cntrSizes:
             for counter_mode in counter_modes:
-                for width in [4, 8, 16]:
+                for width in [2, 8, 32]:
                     cmc = CountMinSketch(width=width, depth=depth, num_flows=num_flows, mode=counter_mode, conf=conf, outPutFileName='RdNMSE_{}depth_{}bits'.format(depth, conf['cntrSize']))
                     cmc.calculateNormalizedRMSE()
 

@@ -90,7 +90,11 @@ class CntrMaster (object):
         """
         """
         self.cntrs[cntrIdx] = self.cntrZeroVec
-        
+    def rstAllCntrs(self):
+        """
+        """
+        self.cntrs = [self.cntrZeroVec] * self.numCntrs
+
     def calcParamsStat (self):
         """
         Pre-compute the cntrs' parameters, in case of a static SEAD cntr 

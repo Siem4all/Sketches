@@ -46,13 +46,15 @@ class PclFileParser(object):
         self.colorOfMode = {'F2P'         : 'green',
                              'RealCntr': 'blue',
                             'CEDAR'       : 'brown',
-                            'Morris'      : 'red'}
+                            'Morris'      : 'red',
+                            'SEAD stat'    : 'Purple'}
 
         # The markers used for each alg', in the dist' case
         self.markerOfMode = {'F2P'         : 'o',
                               'RealCntr': 'v',
                              'CEDAR'       : '<',
-                             'Morris'      : '>'}
+                             'Morris'      : '>',
+                             'SEAD stat'    : '*'}
         self.points      = []
 
     def rdPcl(self, pclFileName):
